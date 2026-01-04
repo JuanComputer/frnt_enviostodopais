@@ -6,8 +6,9 @@
 # Node artifact files
 .angular/
 node_modules/
+node_modules_old/
 dist/
-
+package-lock.json
 # Compiled Java class files
 *.class
 
