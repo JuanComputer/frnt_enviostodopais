@@ -39,7 +39,7 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    this.http.get(`http://localhost:8080/api/envios/tracking/${this.trackingCode}`).subscribe({
+    this.http.get(`https://back-enviostodopais.onrender.com/api/envios/tracking/${this.trackingCode}`).subscribe({
       next: (res: any) => {
         if (res.statusCode === 200 && res.data) {
           this.envioEncontrado = res.data;
