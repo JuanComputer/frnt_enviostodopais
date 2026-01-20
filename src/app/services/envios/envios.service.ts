@@ -6,7 +6,7 @@ import { ResponseDto } from '../../shared/models/response-dto';
 
 @Injectable({ providedIn: 'root' })
 export class EnviosService {
-  private base = 'http://localhost:8080/api/envios';
+  private base = 'https://back-enviostodopais.onrender.com/api/envios';
 
   constructor(private http: HttpClient) {}
 

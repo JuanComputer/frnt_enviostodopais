@@ -6,7 +6,7 @@ import { Observable } from "rxjs";
     providedIn: 'root'
   })
   export class MaestraService {
-    private API_ENVIOS= "localhost:8080/maestra"; // Server para API_CONTRATO
+    private API_ENVIOS= "https://back-enviostodopais.onrender.com/maestra"; // Server para API_CONTRATO
 
   constructor(
     private httpClient: HttpClient, // httpClient
