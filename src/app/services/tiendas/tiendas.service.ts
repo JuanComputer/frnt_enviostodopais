@@ -7,7 +7,7 @@ import { ResponseDto } from '../../shared/models/response-dto';
 
 @Injectable({ providedIn: 'root' })
 export class TiendasService {
-  private base = 'http://localhost:8080/api/tiendas';
+  private base = 'https://back-enviostodopais.onrender.com/api/tiendas';
 
   constructor(private http: HttpClient) {}
 

@@ -7,7 +7,7 @@ import { ResponseDto } from '../shared/models/response-dto';
 @Injectable({ providedIn: 'root' })
 export class UbicacionService {
 
-  private base = 'http://localhost:8080/api/ubigeo';
+  private base = 'https://back-enviostodopais.onrender.com/api/ubigeo';
 
   constructor(private http: HttpClient) {}
 

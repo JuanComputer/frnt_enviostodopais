@@ -49,7 +49,7 @@ import { Observable, map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private base = 'http://localhost:8080/api'; // ajusta si tu backend es diferente
+  private base = 'https://back-enviostodopais.onrender.com/api'; // ajusta si tu backend es diferente
 
   constructor(private http: HttpClient) {}
 

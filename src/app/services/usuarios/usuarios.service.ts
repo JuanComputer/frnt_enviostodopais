@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class UsuariosService {
-  private base = 'http://localhost:8080/api/usuarios';
+  private base = 'https://back-enviostodopais.onrender.com/api/usuarios';
 
   constructor(private http: HttpClient) {}
 
