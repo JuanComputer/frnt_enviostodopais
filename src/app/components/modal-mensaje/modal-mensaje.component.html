@@ -1,27 +1,28 @@
-<div class="modal-backdrop" *ngIf="visible">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ titulo }}</h5>
-        <button type="button" class="btn-close" (click)="onCerrar()"></button>
-      </div>
-  
-      <div class="modal-body">
-        <ng-container *ngIf="success; else errorTpl">
-          <i class="bi bi-check-circle-fill icon-success"></i>
-          <p>{{ mensaje }}</p>
-          <p class="codigo">📦 {{ codigoTracking }}</p>
-          <p class="estado">Estado: {{ estado }}</p>
-        </ng-container>
-  
-        <ng-template #errorTpl>
-          <i class="bi bi-x-circle-fill icon-error"></i>
-          <p>{{ mensaje }}</p>
-        </ng-template>
-      </div>
-  
-      <div class="modal-footer text-center">
-        <button class="btn btn-accent" (click)="onCerrar()">Cerrar</button>
-      </div>
+<div class="modal-overlay" *ngIf="visible" (click)="onCerrar()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <!-- Icono -->
+    <div class="modal-icon" [class.success]="success" [class.error]="!success">
+      <i class="bi" [class.bi-check-lg]="success" [class.bi-x-lg]="!success"></i>
     </div>
+
+    <!-- Contenido -->
+    <div class="modal-title">{{ titulo }}</div>
+    <p class="modal-msg">{{ mensaje }}</p>
+
+    <ng-container *ngIf="success && codigoTracking">
+      <div class="tracking-box">
+        <div class="tracking-label">Código de seguimiento</div>
+        <div class="tracking-code">{{ codigoTracking }}</div>
+      </div>
+      <div class="estado-row" *ngIf="estado">
+        <span class="estado-pill">{{ estado }}</span>
+      </div>
+    </ng-container>
+
+    <button class="btn-cerrar" (click)="onCerrar()">
+      <span *ngIf="success">Continuar</span>
+      <span *ngIf="!success">Entendido</span>
+    </button>
   </div>
-  
+</div>

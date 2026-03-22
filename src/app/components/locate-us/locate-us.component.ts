@@ -33,6 +33,7 @@ export class LocateUsComponent implements OnInit {
 
   // 🔹 Buscador
   searchText = '';
+  isLoading = false;
 
   // 🔹 Paginación
   currentPage = 1;
@@ -53,8 +54,10 @@ export class LocateUsComponent implements OnInit {
   // =======================
 
   loadTiendas() {
+    this.isLoading = true;
     this.tiendasService.listar().subscribe({
       next: (res) => {
+        this.isLoading = false;
         this.tiendas = res.data || [];
         this.filteredStores = [...this.tiendas];
         this.updatePagedStores();
@@ -153,6 +156,10 @@ export class LocateUsComponent implements OnInit {
 
   get totalPages(): number {
     return Math.ceil(this.filteredStores.length / this.itemsPerPage);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   // =======================

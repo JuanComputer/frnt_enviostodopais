@@ -82,9 +82,8 @@ export class CotizadorComponent implements OnInit, OnDestroy {
           if (res.statusCode === 200) {
             // Mapear la respuesta del backend a los nombres esperados por el template
             this.resultado = {
-              // distanciaKm: res.data.distanciaKm || 0, // Asumiendo que el backend puede incluir esto
-              costo: res.data.precio,
-              tiempoEntrega: res.data.diasEstimados,
+              precio:         res.data.precio,
+              diasEstimados:  res.data.diasEstimados,
               valorDeclarado: res.data.valorDeclarado
             };
           } else {

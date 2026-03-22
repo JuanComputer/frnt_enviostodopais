@@ -10,13 +10,16 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./contact-us.component.scss']
 })
 export class ContactUsComponent {
-  name: string = '';
-  email: string = '';
-  message: string = '';
+  name    = '';
+  email   = '';
+  asunto  = '';
+  message = '';
+  enviado = false;
 
   submitContact() {
-    if (this.name && this.email && this.message) {
-      alert(`Mensaje enviado por ${this.name}`);
-    }
+    if (!this.name || !this.email || !this.message) return;
+    // Aquí iría la llamada al servicio de email
+    this.enviado = true;
+    setTimeout(() => { this.enviado = false; this.name=''; this.email=''; this.asunto=''; this.message=''; }, 4000);
   }
 }

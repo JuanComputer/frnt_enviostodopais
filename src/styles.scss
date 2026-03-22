@@ -289,3 +289,55 @@ h1, h2, h3, h4, h5, h6 {
   to   { opacity: 1; }
 }
 .animate-in { animation: fadeInUp 0.6s ease-out both; }
+
+/* ─────────────────────────────────────────
+   RESPONSIVE — correcciones globales
+───────────────────────────────────────── */
+
+/* Navbar height compensation */
+.main-content { padding-top: 72px; }
+
+@media (max-width: 991px) {
+  .main-content { padding-top: 64px; }
+
+  /* Navbar collapse fix */
+  .navbar-collapse {
+    background: rgba(10,15,28,0.98);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 1rem;
+    border-radius: 0 0 16px 16px;
+    margin: 0 -1.25rem;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Cards sin bordes redondeados en móvil muy pequeño */
+  .envio-card, .cot-card, .login-card, .table-card {
+    border-radius: 12px !important;
+  }
+
+  /* Inputs más grandes en móvil para evitar zoom en iOS */
+  .form-control, .form-select {
+    font-size: 16px !important; /* Evita zoom automático en iOS */
+  }
+
+  /* Botones full width en móvil */
+  .btn-registrar, .btn-cotizar, .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Tablas → scroll horizontal en móvil */
+.table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Evitar overflow horizontal global */
+body, html {
+  overflow-x: hidden;
+}
+
+/* Fix Bootstrap dark overrides */
+.table { --bs-table-bg: transparent; --bs-table-border-color: rgba(255,255,255,0.06); }
+.table > :not(caption) > * > * { color: #e2e8f0; background: transparent; }

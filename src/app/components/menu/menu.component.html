@@ -1,57 +1,83 @@
 <nav class="navbar navbar-expand-lg fixed-top" [class.scrolled]="isScrolled">
   <div class="container-fluid px-4">
 
-    <!-- Logo / Marca -->
     <a class="navbar-brand" routerLink="/">
-      <i class="bi bi-truck-front-fill"></i>
-      ENVIOS TODOPAIS
+      <i class="bi bi-truck-front-fill"></i> ENVIOS TODOPAIS
     </a>
 
-    <!-- Toggle mobile -->
     <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-label="Toggle navigation">
+            data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Links -->
     <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
       <ul class="navbar-nav mx-auto gap-1">
+
+        <!-- Inicio — todos -->
         <li class="nav-item">
-          <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}" class="nav-link">
-            Inicio
-          </a>
+          <a routerLink="/" routerLinkActive="active-link"
+             [routerLinkActiveOptions]="{exact:true}" class="nav-link">Inicio</a>
         </li>
+
+        <!-- Cotizador — todos -->
         <li class="nav-item">
           <a routerLink="/cotizador" routerLinkActive="active-link" class="nav-link">Cotizador</a>
         </li>
-        <li class="nav-item">
-          <a routerLink="/ubicanos" routerLinkActive="active-link" class="nav-link">Ubícanos</a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/noticias" routerLinkActive="active-link" class="nav-link">Noticias</a>
+
+        <!-- Ubícanos, Noticias, Contáctanos — solo público y clientes -->
+        <ng-container *ngIf="!isAuthenticated || isCliente">
+          <li class="nav-item">
+            <a routerLink="/ubicanos" routerLinkActive="active-link" class="nav-link">Ubícanos</a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/noticias" routerLinkActive="active-link" class="nav-link">Noticias</a>
+          </li>
+          <li class="nav-item">
+            <a routerLink="/contactanos" routerLinkActive="active-link" class="nav-link">Contáctanos</a>
+          </li>
+        </ng-container>
+
+        <!-- Mis Envíos — solo clientes -->
+        <li class="nav-item" *ngIf="isAuthenticated && isCliente">
+          <a routerLink="/mis-envios" routerLinkActive="active-link" class="nav-link">
+            <i class="bi bi-box-seam me-1" style="font-size:.8rem"></i>Mis Envíos
+          </a>
         </li>
 
-        <!-- Operador / Admin -->
-        <li class="nav-item" *ngIf="isAuthenticated && (userRole === 'Administrador' || userRole === 'Operador')">
+        <!-- Registrar Envío — solo Operador -->
+        <li class="nav-item" *ngIf="isAuthenticated && isOperador">
           <a routerLink="/crear-envio" routerLinkActive="active-link" class="nav-link">
-            <i class="bi bi-plus-circle me-1" style="font-size:0.8rem"></i>Registrar Envío
+            <i class="bi bi-plus-circle me-1" style="font-size:.8rem"></i>Registrar Envío
           </a>
         </li>
-        <li class="nav-item" *ngIf="isAuthenticated && (userRole === 'Administrador' || userRole === 'Operador')">
+
+        <!-- Lista de Envíos — Operador, Admin Sede, Admin General -->
+        <li class="nav-item" *ngIf="isAuthenticated && isStaff">
           <a routerLink="/lista-envios" routerLinkActive="active-link" class="nav-link">
-            <i class="bi bi-list-ul me-1" style="font-size:0.8rem"></i>Lista de Envíos
+            <i class="bi bi-list-ul me-1" style="font-size:.8rem"></i>Envíos
           </a>
         </li>
 
-        <!-- Cliente -->
-        <li class="nav-item" *ngIf="isAuthenticated && userRole === 'Cliente'">
-          <a routerLink="/mis-envios" routerLinkActive="active-link" class="nav-link">Mis Envíos</a>
+        <!-- Admin — Admin Sede y Admin General -->
+        <li class="nav-item dropdown-parent" *ngIf="isAuthenticated && (isAdminSede || isAdminGeneral)">
+          <a class="nav-link" [class.active-link]="isAdminRoute()"
+             (click)="toggleAdminMenu(); $event.preventDefault()">
+            <i class="bi bi-gear me-1" style="font-size:.8rem"></i>Admin
+            <i class="bi bi-chevron-down ms-1" style="font-size:.65rem;opacity:.6"></i>
+          </a>
+          <div class="nav-dropdown" *ngIf="showAdminMenu">
+            <a class="nav-dropdown-item" routerLink="/admin/usuarios" (click)="showAdminMenu=false">
+              <i class="bi bi-people"></i> Usuarios
+            </a>
+            <a class="nav-dropdown-item" routerLink="/admin/sedes" (click)="showAdminMenu=false">
+              <i class="bi bi-shop"></i> Sedes
+            </a>
+            <a class="nav-dropdown-item" routerLink="/admin/reportes" (click)="showAdminMenu=false">
+              <i class="bi bi-bar-chart"></i> Reportes
+            </a>
+          </div>
         </li>
 
-        <li class="nav-item">
-          <a routerLink="/contactanos" routerLinkActive="active-link" class="nav-link">Contáctanos</a>
-        </li>
       </ul>
 
       <!-- Zona derecha -->
@@ -60,12 +86,16 @@
           <div class="user-menu">
             <button class="user-chip" (click)="toggleUserMenu()">
               <i class="bi bi-person-circle"></i>
-              <span>{{ userName }}</span>
-              <span class="role-badge">{{ userRole }}</span>
-              <i class="bi bi-chevron-down" style="font-size:0.7rem; opacity:0.6"></i>
+              <span class="user-name">{{ userName }}</span>
+              <span class="role-badge" [class]="roleBadgeClass">{{ roleLabel }}</span>
+              <i class="bi bi-chevron-down" style="font-size:.7rem;opacity:.6"></i>
             </button>
             <div class="user-dropdown" *ngIf="showUserMenu">
-              <button class="dropdown-item" (click)="logout()">
+              <div class="dropdown-role-info">
+                <i class="bi bi-shield-check"></i> {{ userRole }}
+              </div>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" (click)="logout()">
                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
               </button>
             </div>

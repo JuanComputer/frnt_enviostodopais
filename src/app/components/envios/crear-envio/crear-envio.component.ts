@@ -1,9 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { TiendasService } from '../../../services/tiendas/tiendas.service';
 import { EnviosService } from '../../../services/envios/envios.service';
+import { CotizadorService } from '../../../services/cotizador.service';
+import { AuthService } from '../../../services/auth/auth.service';
 import { ModalMensajeComponent } from '../../modal-mensaje/modal-mensaje.component';
 
 @Component({
@@ -13,26 +16,34 @@ import { ModalMensajeComponent } from '../../modal-mensaje/modal-mensaje.compone
   templateUrl: './crear-envio.component.html',
   styleUrls: ['./crear-envio.component.scss']
 })
-export class CrearEnvioComponent implements OnInit {
-  private fb = inject(FormBuilder);
+export class CrearEnvioComponent implements OnInit, OnDestroy {
+  private fb        = inject(FormBuilder);
   private tiendasSvc = inject(TiendasService);
-  private enviosSvc = inject(EnviosService);
+  private enviosSvc  = inject(EnviosService);
+  private cotizadorSvc = inject(CotizadorService);
+  private authSvc    = inject(AuthService);
+  private router     = inject(Router);
+  private destroy$   = new Subject<void>();
 
-  tiendas: any[] = [];
-  isLoading = false;
+  tiendas: any[]    = [];
+  isLoading         = false;
+  calculandoPrecio  = false;
+  precioCalculado: number | null = null;
+  diasEstimados: number | null   = null;
+  errorPrecio: string | null     = null;
 
-  // Boleta generada
+  // Estado post-registro
+  envioCreado: any  = null;
   boletaBase64: string | null = null;
   boletaFilename = '';
-  ultimoEnvioId: string | null = null;
 
   // Modal
-  modalVisible = false;
-  modalSuccess = false;
-  modalTitulo = '';
-  modalMensaje = '';
-  modalCodigo = '';
-  modalEstado = '';
+  modalVisible  = false;
+  modalSuccess  = false;
+  modalTitulo   = '';
+  modalMensaje  = '';
+  modalCodigo   = '';
+  modalEstado   = '';
 
   form = this.fb.group({
     // Emisor
@@ -48,45 +59,120 @@ export class CrearEnvioComponent implements OnInit {
     receptorNombre:  ['', Validators.required],
 
     // Entrega
-    tipoEntrega:      ['SEDE', Validators.required],
-    destinoId:        [null as string | null],
-    direccionEntrega: [''],
+    tipoEntrega:     ['SEDE', Validators.required],
+    destinoId:       [null as string | null],
+    direccionEntrega:[''],
+
+    // Paquete
+    peso:            [null as number | null, [Validators.required, Validators.min(0.01)]],
+    valorDeclarado:  [null as number | null, [Validators.required, Validators.min(1)]],
+    tipoServicio:    ['Estandar', Validators.required],
+    descripcionPaquete: ['', Validators.required],
 
     // Documento
-    tipoDocumento:     ['BOLETA', Validators.required],
-    precioEnvio:       [null as number | null, [Validators.required, Validators.min(0)]],
-    descripcionPaquete:['', Validators.required],
-    fechaEstimada:     [''],
+    tipoDocumento:   ['BOLETA', Validators.required],
+    fechaEstimada:   [''],
   });
 
   ngOnInit(): void {
     this.tiendasSvc.listar().subscribe({
       next: res => (this.tiendas = res.data || []),
-      error: () => this.showModal(false, 'Error', 'No se pudieron cargar las tiendas')
+      error: () => this.showModal(false, 'Error', 'No se pudieron cargar las sedes')
     });
 
-    this.form.get('tipoEntrega')?.valueChanges.subscribe(tipo => {
-      const dir = this.form.get('direccionEntrega');
-      if (tipo === 'DOMICILIO') dir?.setValidators([Validators.required]);
-      else dir?.clearValidators();
-      dir?.updateValueAndValidity();
+    // Dirección obligatoria si es DOMICILIO
+    this.form.get('tipoEntrega')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tipo => {
+        const dir = this.form.get('direccionEntrega');
+        if (tipo === 'DOMICILIO') dir?.setValidators([Validators.required]);
+        else dir?.clearValidators();
+        dir?.updateValueAndValidity();
+        this.recalcularPrecio();
+      });
+
+    // Recalcular precio cuando cambian campos relevantes
+    const camposPrecio = ['destinoId', 'peso', 'valorDeclarado', 'tipoServicio'];
+    camposPrecio.forEach(campo => {
+      this.form.get(campo)?.valueChanges
+        .pipe(debounceTime(600), takeUntil(this.destroy$))
+        .subscribe(() => this.recalcularPrecio());
     });
   }
 
-  crear() {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  recalcularPrecio(): void {
+    const v = this.form.value;
+    // Necesitamos destino (o al menos para DOMICILIO no), peso y valor declarado
+    const peso = v.peso;
+    const valorDeclarado = v.valorDeclarado;
+    const tipoServicio = v.tipoServicio || 'Estandar';
+    const destinoId = v.destinoId;
+    const tipoEntrega = v.tipoEntrega;
+
+    if (!peso || !valorDeclarado || peso <= 0 || valorDeclarado < 0) {
+      this.precioCalculado = null;
+      this.diasEstimados = null;
+      this.errorPrecio = null;
+      return;
+    }
+    if (tipoEntrega === 'SEDE' && !destinoId) {
+      this.precioCalculado = null;
+      this.errorPrecio = null;
+      return;
+    }
+
+    this.calculandoPrecio = true;
+    this.errorPrecio = null;
+
+    // Para cotizar necesitamos un origenId — usamos el mismo destino como placeholder
+    // El backend usa solo el tipo de servicio + peso + valor para calcular
+    const payload = {
+      origenId: destinoId || '00000000-0000-0000-0000-000000000000',
+      destinoId: destinoId || '00000000-0000-0000-0000-000000000000',
+      peso: peso,
+      tipoServicio: tipoServicio,
+      valorDeclarado: valorDeclarado
+    };
+
+    this.cotizadorSvc.calcular(payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.calculandoPrecio = false;
+          if (res?.statusCode === 200) {
+            this.precioCalculado = res.data.precio;
+            this.diasEstimados   = res.data.diasEstimados;
+          } else {
+            this.errorPrecio = 'No se pudo calcular el precio';
+          }
+        },
+        error: () => {
+          this.calculandoPrecio = false;
+          this.errorPrecio = 'Error al conectar con el cotizador';
+        }
+      });
+  }
+
+  crear(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.showModal(false, 'Campos incompletos', 'Por favor, completa todos los campos obligatorios.');
+      this.showModal(false, 'Campos incompletos', 'Por favor completa todos los campos obligatorios.');
+      return;
+    }
+    if (!this.precioCalculado) {
+      this.showModal(false, 'Precio no calculado', 'Espera a que el sistema calcule el precio antes de continuar.');
       return;
     }
 
     this.isLoading = true;
-    this.boletaBase64 = null;
-
     const v = this.form.value;
 
-    // Construir payload adaptado al backend
-    const payload = {
+    const payload: any = {
       emisorNombre:       v.emisorTipoDoc === 'RUC' ? null : v.emisorNombre,
       emisorRazonSocial:  v.emisorTipoDoc === 'RUC' ? v.emisorNombre : null,
       emisorDni:          v.emisorDni,
@@ -98,9 +184,11 @@ export class CrearEnvioComponent implements OnInit {
       destinoId:          v.destinoId || null,
       tipoEntrega:        v.tipoEntrega,
       direccionEntrega:   v.direccionEntrega || null,
-      tipoDocumento:      v.tipoDocumento,
-      precioEnvio:        v.precioEnvio,
+      peso:               v.peso,
+      valorDeclarado:     v.valorDeclarado,
+      tipoServicio:       v.tipoServicio,
       descripcionPaquete: v.descripcionPaquete,
+      tipoDocumento:      v.tipoDocumento,
       fechaEstimada:      v.fechaEstimada || null,
     };
 
@@ -108,33 +196,22 @@ export class CrearEnvioComponent implements OnInit {
       next: (res: any) => {
         this.isLoading = false;
         if (res?.statusCode === 200) {
-          const envioId = res.data?.id;
-          this.ultimoEnvioId = envioId;
-
-          this.showModal(true, 'Envío registrado', res.message,
+          this.envioCreado = res.data;
+          this.showModal(true, 'Envío registrado', '¡El envío fue registrado exitosamente!',
             res.data?.codigoTracking, res.data?.estado);
-
-          this.form.reset({
-            emisorTipoDoc: 'DNI',
-            receptorTipoDoc: 'DNI',
-            tipoEntrega: 'SEDE',
-            tipoDocumento: 'BOLETA'
-          });
-
-          // Obtener el PDF automáticamente
-          if (envioId) {
-            this.enviosSvc.generarBoleta(envioId).subscribe({
-              next: (boletaRes: any) => {
-                if (boletaRes?.statusCode === 200) {
-                  this.boletaBase64 = boletaRes.data.base64;
-                  this.boletaFilename = boletaRes.data.filename;
+          // Obtener PDF
+          if (res.data?.id) {
+            this.enviosSvc.generarBoleta(res.data.id).subscribe({
+              next: (br: any) => {
+                if (br?.statusCode === 200) {
+                  this.boletaBase64 = br.data.base64;
+                  this.boletaFilename = br.data.filename;
                 }
-              },
-              error: () => console.warn('No se pudo obtener la boleta PDF')
+              }
             });
           }
         } else {
-          this.showModal(false, 'Error', res?.message || 'No se pudo crear el envío.');
+          this.showModal(false, 'Error', res?.message || 'No se pudo registrar el envío.');
         }
       },
       error: () => {
@@ -144,39 +221,54 @@ export class CrearEnvioComponent implements OnInit {
     });
   }
 
-  abrirBoleta() {
-    if (!this.boletaBase64) return;
-    const byteChars = atob(this.boletaBase64);
-    const byteNums = Array.from(byteChars, c => c.charCodeAt(0));
-    const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+  registrarOtro(): void {
+    this.envioCreado    = null;
+    this.boletaBase64   = null;
+    this.boletaFilename = '';
+    this.precioCalculado = null;
+    this.diasEstimados   = null;
+    this.form.reset({
+      emisorTipoDoc: 'DNI', receptorTipoDoc: 'DNI',
+      tipoEntrega: 'SEDE', tipoServicio: 'Estandar', tipoDocumento: 'BOLETA'
+    });
   }
 
-  descargarBoleta() {
+  salir(): void {
+    this.router.navigate(['/lista-envios']);
+  }
+
+  abrirBoleta(): void {
     if (!this.boletaBase64) return;
-    const byteChars = atob(this.boletaBase64);
-    const byteNums = Array.from(byteChars, c => c.charCodeAt(0));
-    const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
+    const blob = this.base64ToBlob(this.boletaBase64);
+    window.open(URL.createObjectURL(blob), '_blank');
+  }
+
+  descargarBoleta(): void {
+    if (!this.boletaBase64) return;
+    const blob = this.base64ToBlob(this.boletaBase64);
     const a = document.createElement('a');
-    a.href = url;
+    a.href = URL.createObjectURL(blob);
     a.download = this.boletaFilename || 'boleta.pdf';
     a.click();
-    URL.revokeObjectURL(url);
   }
 
-  showModal(success: boolean, titulo: string, mensaje: string,
-            codigo = '', estado = '') {
-    this.modalSuccess = success;
-    this.modalTitulo  = titulo;
-    this.modalMensaje = mensaje;
-    this.modalCodigo  = codigo;
-    this.modalEstado  = estado;
-    this.modalVisible = true;
+  private base64ToBlob(b64: string): Blob {
+    const bytes = atob(b64);
+    const arr = Array.from(bytes, c => c.charCodeAt(0));
+    return new Blob([new Uint8Array(arr)], { type: 'application/pdf' });
   }
 
-  cerrarModal() {
-    this.modalVisible = false;
+  showModal(success: boolean, titulo: string, mensaje: string, codigo = '', estado = ''): void {
+    this.modalSuccess = success; this.modalTitulo = titulo;
+    this.modalMensaje = mensaje; this.modalCodigo = codigo;
+    this.modalEstado  = estado;  this.modalVisible = true;
+  }
+
+  cerrarModal(): void { this.modalVisible = false; }
+
+  // Helper para marcar campo como inválido y tocado
+  isInvalid(campo: string): boolean {
+    const c = this.form.get(campo);
+    return !!(c?.invalid && c?.touched);
   }
 }

@@ -40,10 +40,11 @@ export class StorageService {
 
 
   
-  clear() {  
+  clear() {
     if (typeof window !== 'undefined') {
-    localStorage.clear();
-  }
+      localStorage.clear();
+      this.storageChange.next();
+    }
   }
   
 }

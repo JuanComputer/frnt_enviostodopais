@@ -1,132 +1,119 @@
 <div class="ubicanos-page">
+  <div class="container-fluid px-3 px-md-4">
 
-  <!--  Título -->
-  <h2 class="title text-center">📍 Ubícanos</h2>
-  <p class="subtitle text-center">Encuentra nuestras tiendas fácilmente</p>
-
-  <!-- ============================
-         FILTROS + BUSCADOR
-  ============================ --> 
-  
-  <div class="filters-card">
-    <div class="row align-items-end">
-
-      <!-- Departamento -->
-      <div class="col-md-3">
-        <label class="form-label">Departamento</label>
-        <select class="form-select"
-                [(ngModel)]="selectedDepartamentoCode"
-                (change)="onDepartamentoChange()">
-          <option value="">Todos</option>
-          <option *ngFor="let d of departamentos" [value]="d.codigo">
-            {{ d.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Provincia -->
-      <div class="col-md-3">
-        <label class="form-label">Provincia</label>
-        <select class="form-select"
-                [(ngModel)]="selectedProvinciaCode"
-                (change)="onProvinciaChange()"
-                [disabled]="!provincias.length">
-          <option value="">Todos</option>
-          <option *ngFor="let p of provincias" [value]="p.codigo">
-            {{ p.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Distrito -->
-      <div class="col-md-3">
-        <label class="form-label">Distrito</label>
-        <select class="form-select"
-                [(ngModel)]="selectedDistritoCode"
-                (change)="onDistritoChange()"
-                [disabled]="!distritos.length">
-          <option value="">Todos</option>
-          <option *ngFor="let dist of distritos" [value]="dist.codigo">
-            {{ dist.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Buscador -->
-      <div class="col-md-3">
-        <label class="form-label">Buscar tienda</label>
-        <input type="text"
-               class="form-control"
-               [(ngModel)]="searchText"
-               (input)="filterStores()"
-               placeholder="Nombre o dirección...">
-      </div>
-
+    <!-- Header -->
+    <div class="page-header text-center">
+      <div class="page-eyebrow"><i class="bi bi-geo-alt-fill me-1"></i> Red de sedes</div>
+      <h1 class="page-title">Ubícanos</h1>
+      <p class="page-desc">Encuentra la sede más cercana a ti en todo el Perú</p>
     </div>
-  </div>
 
-  <!-- ============================
-         GRID DE TARJETAS
-  ============================ -->
-  <div class="row store-grid">
-
-    <div *ngFor="let store of pagedStores"
-         class="col-md-4 d-flex">
-      <div class="store-card w-100">
-
-        <h5 class="store-name">
-          <i class="bi bi-shop me-1"></i> {{ store.nombre }}
-        </h5>
-
-        <p>
-          <i class="bi bi-geo-alt-fill text-accent"></i>
-          {{ store.direccion }}
-        </p>
-
-        <small class="text-muted">
-          {{ store.distrito?.nombre }},
-          {{ store.distrito?.provincia?.nombre }},
-          {{ store.distrito?.provincia?.departamento?.nombre }}
-        </small>
-
-        <hr>
-
-        <p><i class="bi bi-clock me-1 text-accent"></i>
-           <strong>Horario:</strong> 9:00 AM – 7:00 PM</p>
-
-        <p><i class="bi bi-telephone me-1 text-accent"></i>
-           <strong>Teléfono:</strong> (01) 123-4567</p>
-
+    <!-- Filtros -->
+    <div class="filters-card">
+      <div class="row g-3 align-items-end">
+        <div class="col-6 col-md-3">
+          <label class="form-label">Departamento</label>
+          <select class="form-select" [(ngModel)]="selectedDepartamentoCode" (change)="onDepartamentoChange()">
+            <option value="">Todos</option>
+            <option *ngFor="let d of departamentos" [value]="d.codigo">{{ d.nombre }}</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label">Provincia</label>
+          <select class="form-select" [(ngModel)]="selectedProvinciaCode" (change)="onProvinciaChange()"
+                  [disabled]="!provincias.length">
+            <option value="">Todas</option>
+            <option *ngFor="let p of provincias" [value]="p.codigo">{{ p.nombre }}</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label">Distrito</label>
+          <select class="form-select" [(ngModel)]="selectedDistritoCode" (change)="onDistritoChange()"
+                  [disabled]="!distritos.length">
+            <option value="">Todos</option>
+            <option *ngFor="let dist of distritos" [value]="dist.codigo">{{ dist.nombre }}</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label">Buscar</label>
+          <div class="search-wrap">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-control search-input"
+                   [(ngModel)]="searchText" (input)="filterStores()"
+                   placeholder="Nombre o dirección..." />
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Conteo -->
+    <div class="results-info" *ngIf="filteredStores.length > 0">
+      <span>{{ filteredStores.length }} sede{{ filteredStores.length !== 1 ? 's' : '' }} encontrada{{ filteredStores.length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <!-- Grid sedes -->
+    <div class="row g-3" *ngIf="pagedStores.length > 0">
+      <div class="col-md-6 col-lg-4" *ngFor="let store of pagedStores; let i = index"
+           [style.animation-delay]="(i * 0.05) + 's'">
+        <div class="store-card">
+          <div class="store-header">
+            <div class="store-icon"><i class="bi bi-shop"></i></div>
+            <div>
+              <div class="store-name">{{ store.nombre }}</div>
+              <div class="store-location">
+                {{ store.distrito?.nombre }}, {{ store.distrito?.provincia?.nombre }}
+              </div>
+            </div>
+          </div>
+          <div class="store-divider"></div>
+          <div class="store-info">
+            <div class="store-info-item">
+              <i class="bi bi-geo-alt-fill"></i>
+              <span>{{ store.direccion }}</span>
+            </div>
+            <div class="store-info-item">
+              <i class="bi bi-clock"></i>
+              <span>Lun–Sáb: 9:00 AM – 7:00 PM</span>
+            </div>
+            <div class="store-info-item">
+              <i class="bi bi-telephone"></i>
+              <span>(01) 123-4567</span>
+            </div>
+          </div>
+          <a *ngIf="store.latitud && store.longitud"
+             [href]="'https://maps.google.com/?q='+store.latitud+','+store.longitud"
+             target="_blank" class="btn-mapa">
+            <i class="bi bi-map"></i> Ver en Google Maps
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="empty-state" *ngIf="pagedStores.length === 0 && !isLoading">
+      <i class="bi bi-search"></i>
+      <div>No se encontraron sedes con esos filtros</div>
+      <small>Intenta cambiar los criterios de búsqueda</small>
+    </div>
+
+    <!-- Loading -->
+    <div class="empty-state" *ngIf="isLoading">
+      <span class="spinner-border" style="width:2rem;height:2rem;color:#f59e0b;display:block;margin:0 auto 1rem"></span>
+      <div>Cargando sedes...</div>
+    </div>
+
+    <!-- Paginación -->
+    <nav class="pagination-wrap" *ngIf="totalPages > 1">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <button class="page-btn" *ngFor="let p of pageNumbers"
+              [class.active]="currentPage === p"
+              (click)="changePage(p)">{{ p }}</button>
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </nav>
+
   </div>
-
-  <!-- ============================
-         PAGINACIÓN
-  ============================ -->
-  <nav class="pagination-wrapper" *ngIf="totalPages > 1">
-    <ul class="pagination justify-content-center">
-
-      <li class="page-item"
-          [class.disabled]="currentPage === 1">
-        <button class="page-link" (click)="changePage(currentPage - 1)">Anterior</button>
-      </li>
-
-      <li class="page-item"
-          *ngFor="let page of [].constructor(totalPages); let i = index"
-          [class.active]="currentPage === i + 1">
-        <button class="page-link" (click)="changePage(i + 1)">
-          {{ i + 1 }}
-        </button>
-      </li>
-
-      <li class="page-item"
-          [class.disabled]="currentPage === totalPages">
-        <button class="page-link" (click)="changePage(currentPage + 1)">Siguiente</button>
-      </li>
-
-    </ul>
-  </nav>
-
 </div>

@@ -5,187 +5,133 @@
   border-bottom: 1px solid rgba(255,255,255,0.07);
   padding: 0.6rem 1.25rem;
   transition: background 0.3s ease, box-shadow 0.3s ease;
-
-  &.scrolled {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    background: rgba(15, 23, 42, 1);
-  }
+  &.scrolled { box-shadow: 0 4px 24px rgba(0,0,0,0.4); background: rgba(15, 23, 42, 1); }
 }
 
 .navbar-brand {
-  font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  color: var(--accent) !important;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: opacity 0.2s;
-
+  font-size: 1.1rem; font-weight: 800; letter-spacing: 0.03em;
+  color: var(--accent, #f59e0b) !important;
+  display: flex; align-items: center; gap: 8px; transition: opacity 0.2s;
   i { font-size: 1.3rem; }
-
   &:hover { opacity: 0.85; }
 }
 
 .nav-link {
-  color: #94a3b8 !important;
-  font-weight: 500;
-  font-size: 0.9rem;
-  padding: 0.5rem 0 !important;
-  margin: 0 12px;
-  position: relative;
-  transition: color 0.2s ease;
+  color: #94a3b8 !important; font-weight: 500; font-size: 0.9rem;
+  padding: 0.5rem 0 !important; margin: 0 12px; position: relative;
+  transition: color 0.2s ease; display: flex; align-items: center;
 
   &::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.25s ease;
+    content: ''; position: absolute; bottom: -2px; left: 0;
+    width: 0; height: 2px; background: #f59e0b;
+    border-radius: 2px; transition: width 0.25s ease;
   }
-
-  &:hover {
-    color: #e2e8f0 !important;
-    &::after { width: 100%; }
-  }
-
-  &.active-link {
-    color: var(--accent) !important;
-    &::after { width: 100%; }
-  }
+  &:hover { color: #e2e8f0 !important; &::after { width: 100%; } }
+  &.active-link { color: #f59e0b !important; &::after { width: 100%; } }
 }
 
-/* Chip de usuario */
-.user-chip {
-  background: rgba(255,255,255,0.06);
-  color: #e2e8f0;
-  font-size: 0.87rem;
-  font-weight: 500;
+/* Dropdown Admin */
+.dropdown-parent { position: relative; }
+
+.nav-dropdown {
+  position: absolute; top: calc(100% + 10px); left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  padding: 6px 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-  cursor: pointer;
-
-  i { color: var(--accent); font-size: 1rem; }
-
-  &:hover {
-    background: rgba(255,255,255,0.11);
-    border-color: rgba(255,255,255,0.2);
-    color: #fff;
-  }
-
-  .role-badge {
-    font-size: 0.72rem;
-    font-weight: 600;
-    background: rgba(245,158,11,0.15);
-    color: var(--accent);
-    border-radius: 6px;
-    padding: 1px 7px;
-  }
+  border-radius: 12px; min-width: 180px; padding: 6px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  z-index: 1050; animation: fadeInUp 0.15s ease-out both;
 }
 
-/* Dropdown usuario */
+.nav-dropdown-item {
+  display: flex; align-items: center; gap: 9px;
+  color: #cbd5e1; padding: 9px 14px; border-radius: 8px;
+  font-size: 0.88rem; font-weight: 500; cursor: pointer;
+  text-decoration: none; transition: background 0.15s;
+  i { color: #475569; font-size: 0.9rem; width: 16px; text-align: center; }
+  &:hover { background: rgba(255,255,255,0.07); color: #fff; i { color: #f59e0b; } }
+  &.active { color: #f59e0b; i { color: #f59e0b; } }
+}
+
+/* User chip */
+.user-chip {
+  background: rgba(255,255,255,0.06); color: #e2e8f0;
+  font-size: 0.87rem; font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+  padding: 6px 14px; display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s; cursor: pointer;
+  i { color: #f59e0b; font-size: 1rem; }
+  &:hover { background: rgba(255,255,255,0.11); border-color: rgba(255,255,255,0.2); color: #fff; }
+}
+
+.user-name {
+  max-width: 140px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Role badges */
+.role-badge {
+  font-size: 0.68rem; font-weight: 700; border-radius: 6px; padding: 2px 8px;
+  &.badge-admin-general { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+  &.badge-admin-sede    { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.25); }
+  &.badge-operador      { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+  &.badge-cliente       { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+}
+
+/* User dropdown */
 .user-menu { position: relative; }
 
 .user-dropdown {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  background: #1e293b;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  min-width: 180px;
-  padding: 6px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-  z-index: 1050;
+  position: absolute; right: 0; top: calc(100% + 8px);
+  background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; min-width: 200px; padding: 6px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4); z-index: 1050;
   animation: fadeInUp 0.15s ease-out both;
-
-  .dropdown-item {
-    color: #cbd5e1;
-    padding: 9px 14px;
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 500;
-    transition: background 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    &:hover {
-      background: rgba(255,255,255,0.07);
-      color: #fff;
-    }
-
-    &.danger {
-      color: #fca5a5;
-      &:hover { background: rgba(239,68,68,0.1); }
-    }
-  }
-
-  .dropdown-divider {
-    border-top: 1px solid rgba(255,255,255,0.07);
-    margin: 4px 0;
-  }
 }
 
-/* Botón zona clientes */
+.dropdown-role-info {
+  padding: 8px 14px; font-size: 0.76rem; color: #475569;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.dropdown-divider { border-top: 1px solid rgba(255,255,255,0.07); margin: 4px 0; }
+
+.dropdown-item {
+  color: #cbd5e1; padding: 9px 14px; background: none; border: none;
+  width: 100%; text-align: left; border-radius: 8px;
+  font-size: 0.88rem; font-weight: 500; transition: background 0.15s;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  &:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  &.danger { color: #fca5a5;
+    &:hover { background: rgba(239,68,68,0.1); } }
+}
+
+/* Zona clientes btn */
 .btn-zona {
   background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #0f172a;
-  font-weight: 700;
-  font-size: 0.87rem;
-  border: none;
-  border-radius: 10px;
-  padding: 7px 18px;
-  transition: all 0.2s;
-  box-shadow: 0 2px 10px rgba(245,158,11,0.25);
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(245,158,11,0.4);
-    color: #000;
-  }
+  color: #0f172a; font-weight: 700; font-size: 0.87rem;
+  border: none; border-radius: 10px; padding: 7px 18px;
+  transition: all 0.2s; box-shadow: 0 2px 10px rgba(245,158,11,0.25);
+  &:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.4); color: #000; }
 }
 
 /* Navbar toggler */
 .navbar-toggler {
-  border-color: rgba(255,255,255,0.2);
-  padding: 4px 8px;
-
-  .navbar-toggler-icon {
-    filter: invert(1);
-  }
+  border-color: rgba(255,255,255,0.2); padding: 4px 8px;
+  .navbar-toggler-icon { filter: invert(1); }
 }
 
 /* Responsive */
 @media (max-width: 991px) {
-  .navbar-nav {
-    padding: 12px 0;
-    gap: 2px;
-  }
-
-  .nav-link {
-    margin: 0;
-    padding: 9px 4px !important;
-    border-radius: 8px;
-
-    &::after { display: none; }
-    &:hover { background: rgba(255,255,255,0.05); padding-left: 8px !important; }
-  }
-
+  .navbar-nav { padding: 12px 0; gap: 2px; }
+  .nav-link { margin: 0; padding: 9px 4px !important; border-radius: 8px; &::after { display: none; } }
   .user-chip { width: 100%; justify-content: center; margin-top: 8px; }
   .user-dropdown { position: static; width: 100%; margin-top: 6px; }
   .btn-zona { width: 100%; text-align: center; margin-top: 8px; }
+  .nav-dropdown { position: static; transform: none; width: 100%; margin-top: 4px; border-radius: 10px; }
+  .dropdown-parent .nav-link { cursor: pointer; }
 }
+
+@media (max-width: 400px) { .user-name { display: none; } }
+
+@keyframes fadeInUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }

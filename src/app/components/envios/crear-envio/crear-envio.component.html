@@ -1,30 +1,25 @@
-<div class="crear-envio-container">
-
-  <!-- Card principal -->
+<!-- ══ FORMULARIO (si no se ha creado aún) ══ -->
+<div class="crear-envio-container" *ngIf="!envioCreado">
   <div class="envio-card p-4 p-md-5">
 
     <!-- Encabezado -->
     <div class="d-flex align-items-center gap-3 mb-4">
-      <div style="width:44px;height:44px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);
-                  border-radius:12px;display:flex;align-items:center;justify-content:center;color:#f59e0b;font-size:1.2rem;flex-shrink:0">
-        <i class="bi bi-box-seam"></i>
-      </div>
+      <div class="card-icon"><i class="bi bi-box-seam"></i></div>
       <div>
         <div class="page-title">Registrar Envío</div>
-        <div class="page-subtitle">Complete los datos para generar el envío y su documento</div>
+        <div class="page-subtitle">Los campos marcados con <span class="req">*</span> son obligatorios</div>
       </div>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="crear()" class="row g-3">
 
       <!-- ══ EMISOR ══ -->
-      <div class="col-12">
-        <hr class="section-divider">
+      <div class="col-12"><hr class="section-divider">
         <div class="section-label"><i class="bi bi-person-fill"></i> Emisor (Remitente)</div>
       </div>
 
       <div class="col-md-4">
-        <label class="form-label">Tipo de documento</label>
+        <label class="form-label">Tipo de doc. emisor</label>
         <select formControlName="emisorTipoDoc" class="form-select">
           <option value="DNI">DNI — Persona natural</option>
           <option value="RUC">RUC — Empresa</option>
@@ -34,47 +29,49 @@
       <div class="col-md-4">
         <label class="form-label">
           {{ form.get('emisorTipoDoc')?.value === 'RUC' ? 'RUC' : 'DNI' }}
+          <span class="req">*</span>
         </label>
         <input formControlName="emisorDni" class="form-control"
-               [placeholder]="form.get('emisorTipoDoc')?.value === 'RUC' ? 'Ej: 20512345678 (11 dígitos)' : 'Ej: 76543210 (8 dígitos)'"
+               [class.is-invalid]="isInvalid('emisorDni')"
+               [placeholder]="form.get('emisorTipoDoc')?.value === 'RUC' ? '20512345678' : '76543210'"
                [maxlength]="form.get('emisorTipoDoc')?.value === 'RUC' ? 11 : 8" />
-        <small class="text-danger" *ngIf="form.get('emisorDni')?.touched && form.get('emisorDni')?.invalid">
-          {{ form.get('emisorTipoDoc')?.value === 'RUC' ? 'RUC inválido (11 dígitos)' : 'DNI inválido (8 dígitos)' }}
-        </small>
+        <div class="invalid-feedback" *ngIf="isInvalid('emisorDni')">
+          Ingrese {{ form.get('emisorTipoDoc')?.value === 'RUC' ? 'RUC de 11 dígitos' : 'DNI de 8 dígitos' }}
+        </div>
       </div>
 
       <div class="col-md-4">
         <label class="form-label">
           {{ form.get('emisorTipoDoc')?.value === 'RUC' ? 'Razón social' : 'Nombre completo' }}
+          <span class="req">*</span>
         </label>
         <input formControlName="emisorNombre" class="form-control"
+               [class.is-invalid]="isInvalid('emisorNombre')"
                [placeholder]="form.get('emisorTipoDoc')?.value === 'RUC' ? 'Nombre de la empresa' : 'Ej: Juan Pérez López'" />
-        <small class="text-danger" *ngIf="form.get('emisorNombre')?.touched && form.get('emisorNombre')?.invalid">
-          Campo obligatorio
-        </small>
+        <div class="invalid-feedback">Campo obligatorio</div>
       </div>
 
       <div class="col-md-6">
-        <label class="form-label">Teléfono <span style="color:#334155">(opcional)</span></label>
-        <input formControlName="emisorTelefono" class="form-control" placeholder="Ej: 999 888 777" />
+        <label class="form-label">Teléfono</label>
+        <input formControlName="emisorTelefono" class="form-control" placeholder="999 888 777" />
       </div>
 
       <div class="col-md-6">
-        <label class="form-label">Correo <span style="color:#334155">(notificaciones)</span></label>
-        <input formControlName="emisorCorreo" type="email" class="form-control" placeholder="correo@ejemplo.com" />
-        <small class="text-danger" *ngIf="form.get('emisorCorreo')?.touched && form.get('emisorCorreo')?.invalid">
-          Correo inválido
-        </small>
+        <label class="form-label">Correo electrónico</label>
+        <input formControlName="emisorCorreo" type="email" class="form-control"
+               [class.is-invalid]="isInvalid('emisorCorreo')"
+               placeholder="correo@ejemplo.com" />
+        <div class="invalid-feedback">Correo inválido</div>
+        <div class="field-hint">Se enviará la boleta/factura a este correo</div>
       </div>
 
       <!-- ══ RECEPTOR ══ -->
-      <div class="col-12 mt-1">
-        <hr class="section-divider">
+      <div class="col-12 mt-1"><hr class="section-divider">
         <div class="section-label"><i class="bi bi-person-check-fill"></i> Receptor (Destinatario)</div>
       </div>
 
       <div class="col-md-4">
-        <label class="form-label">Tipo de documento</label>
+        <label class="form-label">Tipo de doc. receptor</label>
         <select formControlName="receptorTipoDoc" class="form-select">
           <option value="DNI">DNI — Persona natural</option>
           <option value="RUC">RUC — Empresa</option>
@@ -84,34 +81,35 @@
       <div class="col-md-4">
         <label class="form-label">
           {{ form.get('receptorTipoDoc')?.value === 'RUC' ? 'RUC' : 'DNI' }}
+          <span class="req">*</span>
         </label>
         <input formControlName="receptorDni" class="form-control"
-               [placeholder]="form.get('receptorTipoDoc')?.value === 'RUC' ? 'Ej: 20512345678' : 'Ej: 76543210'"
+               [class.is-invalid]="isInvalid('receptorDni')"
+               [placeholder]="form.get('receptorTipoDoc')?.value === 'RUC' ? '20512345678' : '76543210'"
                [maxlength]="form.get('receptorTipoDoc')?.value === 'RUC' ? 11 : 8" />
-        <small class="text-danger" *ngIf="form.get('receptorDni')?.touched && form.get('receptorDni')?.invalid">
+        <div class="invalid-feedback">
           {{ form.get('receptorTipoDoc')?.value === 'RUC' ? 'RUC inválido' : 'DNI inválido' }}
-        </small>
+        </div>
       </div>
 
       <div class="col-md-4">
         <label class="form-label">
           {{ form.get('receptorTipoDoc')?.value === 'RUC' ? 'Razón social' : 'Nombre completo' }}
+          <span class="req">*</span>
         </label>
         <input formControlName="receptorNombre" class="form-control"
+               [class.is-invalid]="isInvalid('receptorNombre')"
                [placeholder]="form.get('receptorTipoDoc')?.value === 'RUC' ? 'Nombre de la empresa' : 'Ej: María García'" />
-        <small class="text-danger" *ngIf="form.get('receptorNombre')?.touched && form.get('receptorNombre')?.invalid">
-          Campo obligatorio
-        </small>
+        <div class="invalid-feedback">Campo obligatorio</div>
       </div>
 
       <!-- ══ ENTREGA ══ -->
-      <div class="col-12 mt-1">
-        <hr class="section-divider">
+      <div class="col-12 mt-1"><hr class="section-divider">
         <div class="section-label"><i class="bi bi-truck"></i> Modalidad de Entrega</div>
       </div>
 
       <div class="col-md-6">
-        <label class="form-label">Tipo de entrega</label>
+        <label class="form-label">Tipo de entrega <span class="req">*</span></label>
         <select formControlName="tipoEntrega" class="form-select">
           <option value="SEDE">Entrega en sede</option>
           <option value="DOMICILIO">Entrega a domicilio</option>
@@ -119,107 +117,191 @@
       </div>
 
       <div *ngIf="form.get('tipoEntrega')?.value === 'SEDE'" class="col-md-6">
-        <label class="form-label">Sede destino</label>
-        <select formControlName="destinoId" class="form-select">
+        <label class="form-label">Sede de destino <span class="req">*</span></label>
+        <select formControlName="destinoId" class="form-select"
+                [class.is-invalid]="isInvalid('destinoId')">
           <option [ngValue]="null">— Seleccione una sede —</option>
           <option *ngFor="let t of tiendas" [ngValue]="t.id">{{ t.nombre }}</option>
         </select>
       </div>
 
       <div *ngIf="form.get('tipoEntrega')?.value === 'DOMICILIO'" class="col-md-6">
-        <label class="form-label">Dirección de entrega</label>
+        <label class="form-label">Dirección de entrega <span class="req">*</span></label>
         <input formControlName="direccionEntrega" class="form-control"
-               placeholder="Ej: Jr. Lima 123, Miraflores, Lima" />
-        <small class="text-danger" *ngIf="form.get('direccionEntrega')?.touched && form.get('direccionEntrega')?.invalid">
-          Dirección requerida
-        </small>
+               [class.is-invalid]="isInvalid('direccionEntrega')"
+               placeholder="Jr. Lima 123, Miraflores, Lima" />
+        <div class="invalid-feedback">Dirección requerida para entrega a domicilio</div>
       </div>
 
-      <!-- ══ DOCUMENTO Y PAQUETE ══ -->
-      <div class="col-12 mt-1">
-        <hr class="section-divider">
-        <div class="section-label"><i class="bi bi-receipt"></i> Documento y Paquete</div>
+      <!-- ══ PAQUETE Y PRECIO ══ -->
+      <div class="col-12 mt-1"><hr class="section-divider">
+        <div class="section-label"><i class="bi bi-archive"></i> Paquete y Tarifa</div>
       </div>
 
       <div class="col-md-4">
-        <label class="form-label">Tipo de documento</label>
+        <label class="form-label">Peso (kg) <span class="req">*</span></label>
+        <div class="input-group">
+          <input formControlName="peso" type="number" step="0.1" min="0.01"
+                 class="form-control" [class.is-invalid]="isInvalid('peso')"
+                 placeholder="Ej: 2.5" />
+          <span class="input-group-text">kg</span>
+        </div>
+        <div class="invalid-feedback" *ngIf="isInvalid('peso')">Peso obligatorio (mín. 0.01 kg)</div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Valor declarado (S/.) <span class="req">*</span></label>
+        <div class="input-group">
+          <span class="input-group-text">S/.</span>
+          <input formControlName="valorDeclarado" type="number" step="0.01" min="1"
+                 class="form-control" [class.is-invalid]="isInvalid('valorDeclarado')"
+                 placeholder="0.00" />
+        </div>
+        <div class="invalid-feedback" *ngIf="isInvalid('valorDeclarado')">Valor declarado obligatorio (mín. S/. 1)</div>
+        <div class="field-hint">Uso interno para calcular el seguro</div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Tipo de servicio <span class="req">*</span></label>
+        <select formControlName="tipoServicio" class="form-select">
+          <option value="Estandar">Estándar</option>
+          <option value="Express">Express (+S/ 8.00)</option>
+        </select>
+      </div>
+
+      <!-- Precio calculado (solo lectura) -->
+      <div class="col-12">
+        <div class="precio-box" [class.calculando]="calculandoPrecio" [class.listo]="precioCalculado">
+          <div class="precio-label">
+            <i class="bi bi-calculator me-2"></i>
+            <span *ngIf="!calculandoPrecio && !precioCalculado && !errorPrecio">
+              Completa destino, peso y valor declarado para ver el precio
+            </span>
+            <span *ngIf="calculandoPrecio">Calculando precio...</span>
+            <span *ngIf="errorPrecio" class="text-danger">{{ errorPrecio }}</span>
+          </div>
+          <div class="precio-resultado" *ngIf="precioCalculado && !calculandoPrecio">
+            <div class="precio-valor">S/ {{ precioCalculado | number:'1.2-2' }}</div>
+            <div class="precio-dias" *ngIf="diasEstimados">
+              <i class="bi bi-clock me-1"></i>{{ diasEstimados }} días hábiles
+            </div>
+          </div>
+          <div class="precio-spinner" *ngIf="calculandoPrecio">
+            <span class="spinner-border spinner-border-sm"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Descripción del paquete -->
+      <div class="col-12">
+        <label class="form-label">Descripción del contenido <span class="req">*</span></label>
+        <textarea formControlName="descripcionPaquete" class="form-control"
+                  [class.is-invalid]="isInvalid('descripcionPaquete')"
+                  rows="2" placeholder="Ej: Ropa de verano, 3 prendas, aprox. 1.5 kg"></textarea>
+        <div class="invalid-feedback">Describa el contenido del paquete</div>
+      </div>
+
+      <!-- ══ DOCUMENTO ══ -->
+      <div class="col-12 mt-1"><hr class="section-divider">
+        <div class="section-label"><i class="bi bi-receipt"></i> Documento</div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Tipo de documento <span class="req">*</span></label>
         <select formControlName="tipoDocumento" class="form-select">
           <option value="BOLETA">Boleta de Venta</option>
           <option value="FACTURA">Factura</option>
         </select>
-        <div class="hint-factura" *ngIf="form.get('tipoDocumento')?.value === 'FACTURA'">
-          <i class="bi bi-info-circle"></i> Requiere RUC del emisor
+        <div class="field-hint" *ngIf="form.get('tipoDocumento')?.value === 'FACTURA'">
+          <i class="bi bi-info-circle text-warning me-1"></i>Requiere RUC del emisor
         </div>
-      </div>
-
-      <div class="col-md-4">
-        <label class="form-label">Precio del envío</label>
-        <div class="input-group">
-          <span class="input-group-text">S/.</span>
-          <input formControlName="precioEnvio" type="number" step="0.01" min="0"
-                 class="form-control" placeholder="0.00" />
-        </div>
-        <small class="text-danger" *ngIf="form.get('precioEnvio')?.touched && form.get('precioEnvio')?.invalid">
-          Ingrese un precio válido
-        </small>
       </div>
 
       <div class="col-md-4">
         <label class="form-label">Fecha estimada de entrega</label>
         <input formControlName="fechaEstimada" type="date" class="form-control" />
-      </div>
-
-      <div class="col-12">
-        <label class="form-label">Descripción del paquete / contenido</label>
-        <textarea formControlName="descripcionPaquete" class="form-control"
-                  placeholder="Ej: Ropa de verano, 3 prendas, aprox. 1.5 kg"></textarea>
-        <small class="text-danger" *ngIf="form.get('descripcionPaquete')?.touched && form.get('descripcionPaquete')?.invalid">
-          Describa el contenido del paquete
-        </small>
+        <div class="field-hint" *ngIf="diasEstimados">
+          Sugerida: {{ diasEstimados }} días hábiles
+        </div>
       </div>
 
       <!-- ══ BOTÓN ══ -->
       <div class="col-12 text-center mt-3">
-        <button class="btn-registrar" type="submit" [disabled]="isLoading">
-          <span *ngIf="!isLoading"><i class="bi bi-send"></i> Registrar Envío</span>
+        <button class="btn-registrar" type="submit" [disabled]="isLoading || calculandoPrecio">
+          <span *ngIf="!isLoading"><i class="bi bi-send me-1"></i> Registrar Envío</span>
           <span *ngIf="isLoading">
-            <span class="spinner-border spinner-border-sm" style="width:1rem;height:1rem"></span>
+            <span class="spinner-border spinner-border-sm" style="width:.9rem;height:.9rem"></span>
             Registrando...
           </span>
         </button>
       </div>
-
     </form>
   </div>
+</div>
 
-  <!-- Panel boleta generada -->
-  <div *ngIf="boletaBase64" class="boleta-panel p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-    <div>
-      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;
-                  letter-spacing:0.06em;color:#6ee7b7;margin-bottom:4px;">
-        <i class="bi bi-check-circle-fill me-1"></i> Documento generado
+<!-- ══ PANTALLA POST-REGISTRO ══ -->
+<div class="crear-envio-container" *ngIf="envioCreado">
+  <div class="envio-card p-4 p-md-5 text-center">
+
+    <div class="success-icon"><i class="bi bi-check-lg"></i></div>
+    <h2 class="success-title">¡Envío registrado!</h2>
+    <p class="success-sub">El envío fue creado exitosamente en el sistema</p>
+
+    <!-- Datos del envío -->
+    <div class="envio-resumen">
+      <div class="row g-2">
+        <div class="col-6">
+          <div class="resumen-label">Código de tracking</div>
+          <div class="resumen-tracking">{{ envioCreado.codigoTracking }}</div>
+        </div>
+        <div class="col-6">
+          <div class="resumen-label">Estado</div>
+          <span class="estado-pill registrado">{{ envioCreado.estado }}</span>
+        </div>
+        <div class="col-6" *ngIf="envioCreado.numeroDocumento">
+          <div class="resumen-label">Documento</div>
+          <div class="resumen-value">{{ envioCreado.numeroDocumento }}</div>
+        </div>
+        <div class="col-6" *ngIf="envioCreado.precioEnvio">
+          <div class="resumen-label">Precio</div>
+          <div class="resumen-price">S/ {{ envioCreado.precioEnvio | number:'1.2-2' }}</div>
+        </div>
       </div>
-      <div class="doc-name">{{ boletaFilename }}</div>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
-      <button class="btn-ver-boleta" (click)="abrirBoleta()">
-        <i class="bi bi-box-arrow-up-right"></i> Ver en nueva pestaña
-      </button>
-      <button class="btn-descargar" (click)="descargarBoleta()">
-        <i class="bi bi-download"></i> Descargar PDF
-      </button>
-    </div>
-  </div>
 
+    <!-- Boleta PDF -->
+    <div class="boleta-actions" *ngIf="boletaBase64">
+      <div class="boleta-ready">
+        <i class="bi bi-file-earmark-pdf-fill"></i>
+        <span>{{ boletaFilename }}</span>
+      </div>
+      <div class="d-flex gap-2 justify-content-center flex-wrap mt-2">
+        <button class="btn-ver-boleta" (click)="abrirBoleta()">
+          <i class="bi bi-box-arrow-up-right me-1"></i> Ver en nueva pestaña
+        </button>
+        <button class="btn-descargar" (click)="descargarBoleta()">
+          <i class="bi bi-download me-1"></i> Descargar PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="post-actions">
+      <button class="btn-nuevo" (click)="registrarOtro()">
+        <i class="bi bi-plus-circle me-1"></i> Registrar otro envío
+      </button>
+      <button class="btn-salir" (click)="salir()">
+        <i class="bi bi-list-ul me-1"></i> Ver lista de envíos
+      </button>
+    </div>
+
+  </div>
 </div>
 
 <!-- Modal -->
 <app-modal-mensaje
-  [visible]="modalVisible"
-  [success]="modalSuccess"
-  [titulo]="modalTitulo"
-  [mensaje]="modalMensaje"
-  [codigoTracking]="modalCodigo"
-  [estado]="modalEstado"
+  [visible]="modalVisible" [success]="modalSuccess"
+  [titulo]="modalTitulo" [mensaje]="modalMensaje"
+  [codigoTracking]="modalCodigo" [estado]="modalEstado"
   (cerrar)="cerrarModal()">
 </app-modal-mensaje>

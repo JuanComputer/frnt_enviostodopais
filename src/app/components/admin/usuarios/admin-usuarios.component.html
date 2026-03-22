@@ -1,0 +1,230 @@
+<div class="admin-page">
+  <div class="container-fluid px-3 px-md-4">
+
+    <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <div class="page-eyebrow"><i class="bi bi-people me-1"></i> Administración</div>
+        <h1 class="page-title">Gestión de Usuarios</h1>
+        <p class="page-desc">{{ esAdminGeneral ? 'Todos los usuarios del sistema' : 'Usuarios de tu sede' }}</p>
+      </div>
+      <button class="btn-nuevo" (click)="abrirCrear()">
+        <i class="bi bi-person-plus me-1"></i> Nuevo usuario
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-bar">
+      <div class="row g-2 align-items-end">
+        <div class="col-6 col-md-3" *ngIf="esAdminGeneral">
+          <label class="filter-label">Rol</label>
+          <select class="form-select form-select-sm" [(ngModel)]="filtroRol" (change)="cargarUsuarios()">
+            <option value="">Todos los roles</option>
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="filter-label">Estado</label>
+          <select class="form-select form-select-sm" [(ngModel)]="filtroActivo" (change)="cargarUsuarios()">
+            <option value="">Todos</option>
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <button class="btn-filter-refresh" (click)="cargarUsuarios()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="empty-state" *ngIf="isLoading">
+      <span class="spinner-border" style="color:#f59e0b;width:2rem;height:2rem;display:block;margin:0 auto 1rem"></span>
+      <div>Cargando usuarios...</div>
+    </div>
+
+    <!-- Tabla desktop -->
+    <div class="table-card d-none d-md-block" *ngIf="!isLoading">
+      <div class="table-responsive">
+        <table class="table admin-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>DNI</th>
+              <th>Rol</th>
+              <th>Sede</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuarios">
+              <td>
+                <div class="user-name">{{ u.nombre }} {{ u.apellidoP }}</div>
+              </td>
+              <td><span class="user-email">{{ u.correo }}</span></td>
+              <td><span class="user-dni">{{ u.dni }}</span></td>
+              <td>
+                <span class="rol-badge" [class]="'rol-' + (u.rol?.nombre | lowercase | replace:' ':'-')">
+                  {{ u.rol?.nombre }}
+                </span>
+              </td>
+              <td>
+                <span class="sede-name">{{ u.sede?.nombre || '—' }}</span>
+              </td>
+              <td>
+                <span class="estado-pill" [class.activo]="u.activo" [class.inactivo]="!u.activo">
+                  {{ u.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button class="btn-action" (click)="abrirEditar(u)" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn-action" [class.danger]="u.activo"
+                        (click)="toggleActivo(u)"
+                        [title]="u.activo ? 'Desactivar' : 'Activar'">
+                  <i class="bi" [class.bi-toggle-on]="u.activo" [class.bi-toggle-off]="!u.activo"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="usuarios.length === 0">
+              <td colspan="7" class="text-center py-4" style="color:#334155">
+                No se encontraron usuarios
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cards mobile -->
+    <div class="mobile-cards d-md-none" *ngIf="!isLoading">
+      <div class="mobile-card" *ngFor="let u of usuarios">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="user-name">{{ u.nombre }} {{ u.apellidoP }}</div>
+            <div class="user-email">{{ u.correo }}</div>
+          </div>
+          <span class="estado-pill" [class.activo]="u.activo" [class.inactivo]="!u.activo">
+            {{ u.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="rol-badge" [class]="'rol-' + (u.rol?.nombre | lowercase | replace:' ':'-')">
+            {{ u.rol?.nombre }}
+          </span>
+          <div class="d-flex gap-2">
+            <button class="btn-action" (click)="abrirEditar(u)"><i class="bi bi-pencil"></i></button>
+            <button class="btn-action" [class.danger]="u.activo" (click)="toggleActivo(u)">
+              <i class="bi" [class.bi-toggle-on]="u.activo" [class.bi-toggle-off]="!u.activo"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ MODAL CREAR / EDITAR ══ -->
+<div class="modal-overlay" *ngIf="modalVisible" (click)="cerrar()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-box-header">
+      <div class="modal-box-title">{{ editando ? 'Editar usuario' : 'Nuevo usuario' }}</div>
+      <button class="modal-close" (click)="cerrar()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="modal-box-body">
+      <form [formGroup]="form" class="row g-3">
+
+        <div class="col-md-6">
+          <label class="form-label">Nombre <span class="req">*</span></label>
+          <input formControlName="nombre" class="form-control" [class.is-invalid]="isInvalid('nombre')"
+                 placeholder="Juan" />
+          <div class="invalid-feedback">Requerido</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Apellido paterno <span class="req">*</span></label>
+          <input formControlName="apellidoP" class="form-control" [class.is-invalid]="isInvalid('apellidoP')"
+                 placeholder="Pérez" />
+          <div class="invalid-feedback">Requerido</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Apellido materno</label>
+          <input formControlName="apellidoM" class="form-control" placeholder="López" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">DNI <span class="req">*</span></label>
+          <input formControlName="dni" class="form-control" [class.is-invalid]="isInvalid('dni')"
+                 placeholder="12345678" maxlength="8" />
+          <div class="invalid-feedback">DNI de 8 dígitos</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Correo electrónico <span class="req">*</span></label>
+          <input formControlName="correo" type="email" class="form-control"
+                 [class.is-invalid]="isInvalid('correo')" placeholder="correo@ejemplo.com" />
+          <div class="invalid-feedback">Correo inválido</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">
+            Contraseña <span class="req" *ngIf="!editando">*</span>
+            <span class="field-hint ms-1" *ngIf="editando">(dejar vacío para no cambiar)</span>
+          </label>
+          <input formControlName="password" type="password" class="form-control"
+                 [class.is-invalid]="isInvalid('password')" placeholder="Mínimo 6 caracteres" />
+          <div class="invalid-feedback">Mínimo 6 caracteres</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Rol <span class="req">*</span></label>
+          <select formControlName="rolNombre" class="form-select">
+            <option *ngFor="let r of rolesPermitidos" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Sede asignada</label>
+          <select formControlName="sedeId" class="form-select">
+            <option [ngValue]="null">— Sin sede —</option>
+            <option *ngFor="let s of sedes" [value]="s.id">{{ s.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="col-12" *ngIf="editando">
+          <div class="d-flex align-items-center gap-3">
+            <label class="form-label mb-0">Estado</label>
+            <div class="toggle-wrap">
+              <input type="checkbox" formControlName="activo" id="toggleActivo" />
+              <label for="toggleActivo" class="toggle-label">
+                {{ form.get('activo')?.value ? 'Activo' : 'Inactivo' }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12" *ngIf="errorForm">
+          <div class="error-box"><i class="bi bi-exclamation-circle me-1"></i>{{ errorForm }}</div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-box-footer">
+      <button class="btn-modal-close" (click)="cerrar()">Cancelar</button>
+      <button class="btn-modal-guardar" (click)="guardar()" [disabled]="guardando">
+        <span *ngIf="!guardando"><i class="bi bi-check-lg me-1"></i> Guardar</span>
+        <span *ngIf="guardando"><span class="spinner-border spinner-border-sm"></span> Guardando...</span>
+      </button>
+    </div>
+
+  </div>
+</div>

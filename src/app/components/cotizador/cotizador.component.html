@@ -1,219 +1,118 @@
-<!-- <div class="cotizador-wrapper">
-  <div class="cotizador-card">
-    <h2 class="titulo text-center mb-4">Cotiza tu envío</h2>
+<div class="cotizador-page">
+  <div class="container">
 
-    <form [formGroup]="form" (ngSubmit)="cotizar()">
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Origen</label>
-          <select class="form-select" formControlName="origenId" [disabled]="!tiendas.length">
-            <option value="">Seleccione una tienda</option>
-            <option *ngFor="let t of tiendas" [value]="t.id">{{ t.nombre }}</option>
-          </select>
-          <div *ngIf="!tiendas.length" class="text-muted">Cargando tiendas...</div>
-          <div *ngIf="form.get('origenId')?.touched && form.get('origenId')?.invalid" class="text-danger">
-            Seleccione un origen
-          </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Destino</label>
-          <select class="form-select" formControlName="destinoId" [disabled]="!tiendas.length">
-            <option value="">Seleccione una tienda</option>
-            <option *ngFor="let t of tiendas" [value]="t.id">{{ t.nombre }}</option>
-          </select>
-          <div *ngIf="!tiendas.length" class="text-muted">Cargando tiendas...</div>
-          <div *ngIf="form.get('destinoId')?.touched && form.get('destinoId')?.invalid" class="text-danger">
-            Seleccione un destino
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Peso (kg)</label>
-          <input
-            type="number"
-            formControlName="peso"
-            class="form-control"
-            step="0.1"
-            min="0.1"
-            placeholder="Ej: 2.5"
-          />
-          <div *ngIf="form.get('peso')?.touched && form.get('peso')?.invalid" class="text-danger">
-            Ingrese un peso válido (mínimo 0.1 kg)
-          </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Valor declarado (S/)</label>
-          <input
-            type="number"
-            formControlName="valorDeclarado"
-            class="form-control"
-            step="0.01"
-            min="0"
-            placeholder="Ej: 100.00"
-          />
-          <div *ngIf="form.get('valorDeclarado')?.touched && form.get('valorDeclarado')?.invalid" class="text-danger">
-            Ingrese un valor declarado válido
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-12 mb-3">
-          <label class="form-label">Tipo de servicio</label>
-          <select class="form-select" formControlName="tipoServicio">
-            <option value="Normal">Normal</option>
-            <option value="Express">Express</option>
-          </select>
-        </div>
-      </div>
-
-      <button class="btn btn-accent w-100 py-2" type="submit" [disabled]="isLoading || !tiendas.length">
-        <span *ngIf="!isLoading">Calcular costo</span>
-        <div *ngIf="isLoading" class="spinner-border spinner-border-sm"></div>
-      </button>
-    </form>
-
-    <div *ngIf="resultado" class="resultado mt-4 p-4 text-center">
-      <h5 class="text-accent fw-bold mb-3">Resultado de cotización</h5>
-      <p><strong>Costo estimado:</strong> S/ {{ resultado.costo | number : '1.2-2' }}</p>
-      <p><strong>Días estimados:</strong> {{ resultado.tiempoEntrega }}</p>
-      <p><strong>Valor declarado:</strong> S/ {{ resultado.valorDeclarado | number : '1.2-2' }}</p>
+    <!-- Encabezado -->
+    <div class="page-header text-center">
+      <div class="page-eyebrow">Herramienta gratuita</div>
+      <h1 class="page-title">Cotizador de Envíos</h1>
+      <p class="page-desc">Calcula el precio estimado de tu envío en segundos</p>
     </div>
-  </div>
-</div> -->
 
-<div class="cotizador-wrapper">
-  <div class="cotizador-card card-custom">
-    <h2 class="titulo text-center mb-4">
-      Cotiza tu envío
-      <div class="titulo-underline"></div>
-    </h2>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="cot-card">
 
-    <form [formGroup]="form" (ngSubmit)="cotizar()" class="form-container">
-      <div class="section-group mb-4">
-        <h4 class="section-title">Ubicaciones</h4>
-        <div class="row g-4 align-items-center">
-          <div class="col-12 col-md-6">
-            <label for="origenId" class="form-label">Origen</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-              <select id="origenId" class="form-select" formControlName="origenId" [disabled]="!tiendas.length" (change)="validateOrigin()">
-                <option value="">Seleccione una tienda</option>
+          <form [formGroup]="form" (ngSubmit)="cotizar()" class="row g-3">
+
+            <!-- Origen / Destino -->
+            <div class="col-12">
+              <div class="section-label"><i class="bi bi-geo-alt-fill"></i> Ruta del Envío</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Sede de origen</label>
+              <select class="form-select" formControlName="origenId">
+                <option value="">— Seleccione origen —</option>
                 <option *ngFor="let t of tiendas" [value]="t.id">{{ t.nombre }}</option>
               </select>
+              <small class="text-danger" *ngIf="form.get('origenId')?.touched && form.get('origenId')?.invalid">
+                Seleccione un origen
+              </small>
             </div>
-            <div *ngIf="form.get('origenId')?.invalid && form.get('origenId')?.touched" class="text-danger small mt-2">
-              <i class="bi bi-exclamation-circle"></i> Seleccione un origen
-            </div>
-          </div>
 
-          <div class="col-12 col-md-6">
-            <label for="destinoId" class="form-label">Destino</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-              <select id="destinoId" class="form-select" formControlName="destinoId" [disabled]="!tiendas.length" (change)="validateDestination()">
-                <option value="">Seleccione una tienda</option>
+            <div class="col-md-6">
+              <label class="form-label">Sede de destino</label>
+              <select class="form-select" formControlName="destinoId">
+                <option value="">— Seleccione destino —</option>
                 <option *ngFor="let t of tiendas" [value]="t.id">{{ t.nombre }}</option>
               </select>
+              <small class="text-danger" *ngIf="form.get('destinoId')?.touched && form.get('destinoId')?.invalid">
+                Seleccione un destino
+              </small>
             </div>
-            <div *ngIf="form.get('destinoId')?.invalid && form.get('destinoId')?.touched" class="text-danger small mt-2">
-              <i class="bi bi-exclamation-circle"></i> Seleccione un destino
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="section-group mb-4">
-        <h4 class="section-title">Detalles del envío</h4>
-        <div class="row g-4 align-items-center">
-          <div class="col-12 col-md-6">
-            <label for="peso" class="form-label">Peso (kg)</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-box"></i></span>
-              <input
-                id="peso"
-                type="number"
-                formControlName="peso"
-                class="form-control"
-                step="0.1"
-                min="0.1"
-                placeholder="Ej: 2.5"
-                required
-                (input)="validateWeight()"
-              />
+            <!-- Paquete -->
+            <div class="col-12 mt-1">
+              <div class="section-label"><i class="bi bi-box-seam"></i> Detalles del Paquete</div>
             </div>
-            <div *ngIf="form.get('peso')?.invalid && form.get('peso')?.touched" class="text-danger small mt-2">
-              <i class="bi bi-exclamation-circle"></i> Peso mínimo 0.1 kg
-            </div>
-          </div>
 
-          <div class="col-12 col-md-6">
-            <label for="valorDeclarado" class="form-label">Valor declarado (S/)</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
-              <input
-                id="valorDeclarado"
-                type="number"
-                formControlName="valorDeclarado"
-                class="form-control"
-                step="0.01"
-                min="0"
-                placeholder="Ej: 100.00"
-                required
-                (input)="validateValue()"
-              />
+            <div class="col-md-4">
+              <label class="form-label">Peso (kg)</label>
+              <div class="input-group">
+                <input type="number" formControlName="peso" class="form-control"
+                       step="0.1" min="0.1" placeholder="Ej: 2.5" />
+                <span class="input-group-text">kg</span>
+              </div>
+              <small class="text-danger" *ngIf="form.get('peso')?.touched && form.get('peso')?.invalid">
+                Peso mínimo 0.1 kg
+              </small>
             </div>
-            <div *ngIf="form.get('valorDeclarado')?.invalid && form.get('valorDeclarado')?.touched" class="text-danger small mt-2">
-              <i class="bi bi-exclamation-circle"></i> Valor inválido
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="section-group mb-4">
-        <h4 class="section-title">Tipo de servicio</h4>
-        <div class="row g-4 align-items-center">
-          <div class="col-12">
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-truck"></i></span>
-              <select id="tipoServicio" class="form-select" formControlName="tipoServicio">
-                <option value="Normal">Normal</option>
-                <option value="Express">Express</option>
-                <option value="Premium">Premium</option>
+            <div class="col-md-4">
+              <label class="form-label">Tipo de servicio</label>
+              <select class="form-select" formControlName="tipoServicio">
+                <option value="Estandar">Estándar</option>
+                <option value="Express">Express (+S/ 8.00)</option>
               </select>
             </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Valor declarado (S/.)</label>
+              <div class="input-group">
+                <span class="input-group-text">S/.</span>
+                <input type="number" formControlName="valorDeclarado" class="form-control"
+                       step="0.01" min="0" placeholder="0.00" />
+              </div>
+            </div>
+
+            <!-- Botón -->
+            <div class="col-12 text-center mt-2">
+              <button type="submit" class="btn-cotizar" [disabled]="form.invalid || isLoading">
+                <span *ngIf="!isLoading"><i class="bi bi-calculator"></i> Calcular precio</span>
+                <span *ngIf="isLoading">
+                  <span class="spinner-border spinner-border-sm" style="width:.9rem;height:.9rem"></span>
+                  Calculando...
+                </span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Resultado -->
+          <div *ngIf="resultado" class="resultado-card">
+            <div class="resultado-header">
+              <i class="bi bi-check-circle-fill"></i> Cotización calculada
+            </div>
+            <div class="row g-3 mt-1">
+              <div class="col-4 text-center">
+                <div class="res-label">Precio estimado</div>
+                <div class="res-value price">S/ {{ resultado.precio | number:'1.2-2' }}</div>
+              </div>
+              <div class="col-4 text-center">
+                <div class="res-label">Días estimados</div>
+                <div class="res-value">{{ resultado.diasEstimados }} días</div>
+              </div>
+              <div class="col-4 text-center">
+                <div class="res-label">Valor declarado</div>
+                <div class="res-value">S/ {{ resultado.valorDeclarado | number:'1.2-2' }}</div>
+              </div>
+            </div>
+            <div class="res-note">
+              <i class="bi bi-info-circle"></i>
+              Precio calculado con tarifa base + peso + 1.5% del valor declarado
+              <span *ngIf="form.get('tipoServicio')?.value === 'Express'"> + recargo Express</span>.
+            </div>
           </div>
-        </div>
-      </div>
 
-      <button class="btn btn-accent w-100 py-3" type="submit" [disabled]="form.invalid || isLoading || !tiendas.length">
-        <span *ngIf="!isLoading">Calcular costo</span>
-        <div *ngIf="isLoading" class="spinner-border spinner-border-sm"></div>
-      </button>
-    </form>
-
-    <div *ngIf="resultado" class="resultado card-custom mt-5">
-      <h5 class="text-accent fw-bold mb-4 text-center">Resultado de cotización</h5>
-      <div class="resultado-grid">
-        <!-- <div class="resultado-item">
-          <i class="bi bi-rulers"></i>
-          <span><strong>Distancia:</strong> {{ resultado.distanciaKm | number : '1.0-1' }} km</span>
-        </div> -->
-        <div class="resultado-item">
-          <i class="bi bi-currency-dollar"></i>
-          <span><strong>Costo estimado:</strong> S/ {{ resultado.costo | number : '1.2-2' }}</span>
-        </div>
-        <div class="resultado-item">
-          <i class="bi bi-clock"></i>
-          <span><strong>Días estimados:</strong> {{ resultado.tiempoEntrega }}</span>
-        </div>
-        <div class="resultado-item">
-          <i class="bi bi-currency-dollar"></i>
-          <span><strong>Valor declarado:</strong> S/ {{ resultado.valorDeclarado | number : '1.2-2' }}</span>
         </div>
       </div>
     </div>

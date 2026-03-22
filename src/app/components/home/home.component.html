@@ -1,64 +1,56 @@
-<!-- ══════════════════════════════════════════
-     HERO — solo si NO está logueado
-══════════════════════════════════════════ -->
+<!-- ══ HERO — sin login ══ -->
 <ng-container *ngIf="!isLoggedIn()">
   <div class="hero-wrapper">
     <div class="container">
       <div class="row align-items-center min-vh-100 py-5">
 
-        <!-- Columna izquierda: copy -->
         <div class="col-lg-6 hero-content mb-5 mb-lg-0">
           <div class="hero-eyebrow">
             <i class="bi bi-geo-alt-fill"></i> Cobertura nacional · Perú
           </div>
-          <h1 class="hero-title mb-0">
-            Envíos rápidos<br>
-            <span>a todo el país</span>
+          <h1 class="hero-title">
+            Envíos rápidos<br><span>a todo el país</span>
           </h1>
           <p class="hero-subtitle">
             Registra, rastrea y gestiona tus paquetes desde cualquier lugar.
             Confiable, seguro y al alcance de un clic.
           </p>
-
           <div class="hero-ctas">
-            <button class="btn btn-hero-primary" (click)="irZonaClientes()">
+            <a routerLink="/auth" class="btn btn-hero-primary">
               <i class="bi bi-door-open me-2"></i> Acceder a mi cuenta
-            </button>
+            </a>
             <a routerLink="/cotizador" class="btn btn-hero-ghost">
               <i class="bi bi-calculator me-2"></i> Cotizar envío
             </a>
           </div>
         </div>
 
-        <!-- Columna derecha: tracking card -->
+        <!-- Tracking card -->
         <div class="col-lg-6 d-flex justify-content-center justify-content-lg-end">
           <div class="tracking-card w-100">
             <div class="tracking-title">
               <i class="bi bi-search"></i> Rastrear mi envío
             </div>
-
             <div class="input-group mb-2">
-              <input
-                type="text"
-                [(ngModel)]="trackingCode"
-                class="form-control tracking-input"
-                placeholder="Ej: PKG-A1B2C3D4"
-                (keyup.enter)="buscarEnvio()"
-              />
-              <button class="btn btn-track" (click)="buscarEnvio()">
-                <i class="bi bi-search me-1"></i> Buscar
+              <input type="text" [(ngModel)]="trackingCode"
+                     class="form-control tracking-input"
+                     placeholder="Ej: PKG-A1B2C3D4"
+                     (keyup.enter)="buscarEnvio()" />
+              <button class="btn btn-track" (click)="buscarEnvio()" [disabled]="buscando">
+                <span *ngIf="!buscando"><i class="bi bi-search me-1"></i> Buscar</span>
+                <span *ngIf="buscando"><span class="spinner-border spinner-border-sm"></span></span>
               </button>
             </div>
-            <small style="color:#475569; font-size:0.78rem;">
-              Ingresa el código de seguimiento que recibiste por correo
+            <small style="color:#475569;font-size:.78rem">
+              Ingresa el código que recibiste por correo
             </small>
 
-            <!-- Resultado -->
+            <!-- Resultado tracking -->
             <div *ngIf="envioEncontrado" class="tracking-result">
               <div class="row g-2">
                 <div class="col-12">
                   <div class="result-label">Código</div>
-                  <div class="tracking-code">{{ envioEncontrado.codigoTracking }}</div>
+                  <div class="tracking-code-result">{{ envioEncontrado.codigoTracking }}</div>
                 </div>
                 <div class="col-6">
                   <div class="result-label">Estado</div>
@@ -66,7 +58,17 @@
                 </div>
                 <div class="col-6">
                   <div class="result-label">Destino</div>
-                  <div class="result-value">{{ envioEncontrado.destino?.nombre || 'Por confirmar' }}</div>
+                  <div class="result-value">
+                    {{ envioEncontrado.tipoEntrega === 'DOMICILIO' ? 'Domicilio' : (envioEncontrado.destino?.nombre || 'Por confirmar') }}
+                  </div>
+                </div>
+                <div class="col-6" *ngIf="envioEncontrado.fechaEstimada">
+                  <div class="result-label">Entrega estimada</div>
+                  <div class="result-value">{{ envioEncontrado.fechaEstimada | date:'dd/MM/yyyy' }}</div>
+                </div>
+                <div class="col-6" *ngIf="envioEncontrado.notaEstado">
+                  <div class="result-label">Última nota</div>
+                  <div class="result-value">{{ envioEncontrado.notaEstado }}</div>
                 </div>
               </div>
             </div>
@@ -110,19 +112,19 @@
   </div>
 </ng-container>
 
-<!-- ══════════════════════════════════════════
-     DASHBOARD — si está logueado
-══════════════════════════════════════════ -->
+<!-- ══ DASHBOARD — con login ══ -->
 <div *ngIf="isLoggedIn()" class="dashboard-section main-content">
   <div class="container">
 
     <div class="welcome-header">
-      <div class="welcome-name">Hola, {{ user?.correo || 'Usuario' }} 👋</div>
-      <div class="welcome-role"><i class="bi bi-person-badge"></i> {{ user?.role }}</div>
+      <div class="welcome-name">Hola, {{ user?.correo }} 👋</div>
+      <div class="welcome-role">
+        <i class="bi bi-shield-fill me-1"></i>{{ role }}
+      </div>
     </div>
 
-    <!-- Administrador -->
-    <div *ngIf="user?.role === 'Administrador'" class="row g-3 justify-content-center">
+    <!-- Admin General -->
+    <div *ngIf="isAdminGeneral" class="row g-3 justify-content-center">
       <div class="col-6 col-md-3" (click)="router.navigate(['/crear-envio'])">
         <div class="action-card">
           <div class="action-icon blue"><i class="bi bi-plus-circle"></i></div>
@@ -133,22 +135,29 @@
       <div class="col-6 col-md-3" (click)="router.navigate(['/lista-envios'])">
         <div class="action-card">
           <div class="action-icon green"><i class="bi bi-list-check"></i></div>
-          <div class="action-title">Ver Envíos</div>
-          <div class="action-desc">Gestión completa</div>
+          <div class="action-title">Todos los Envíos</div>
+          <div class="action-desc">Vista global del sistema</div>
         </div>
       </div>
-      <div class="col-6 col-md-3" (click)="router.navigate(['/usuarios'])">
+      <div class="col-6 col-md-3" (click)="router.navigate(['/cotizador'])">
         <div class="action-card">
-          <div class="action-icon amber"><i class="bi bi-people"></i></div>
-          <div class="action-title">Usuarios</div>
-          <div class="action-desc">Gestionar cuentas</div>
+          <div class="action-icon amber"><i class="bi bi-calculator"></i></div>
+          <div class="action-title">Cotizador</div>
+          <div class="action-desc">Calcular tarifas</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3" (click)="router.navigate(['/ubicanos'])">
+        <div class="action-card">
+          <div class="action-icon purple"><i class="bi bi-shop"></i></div>
+          <div class="action-title">Sedes</div>
+          <div class="action-desc">Ver todas las sedes</div>
         </div>
       </div>
     </div>
 
-    <!-- Operador -->
-    <div *ngIf="user?.role === 'Operador'" class="row g-3 justify-content-center">
-      <div class="col-6 col-md-3" (click)="irCrearEnvio()">
+    <!-- Admin de Sede -->
+    <div *ngIf="isAdminSede" class="row g-3 justify-content-center">
+      <div class="col-6 col-md-3" (click)="router.navigate(['/crear-envio'])">
         <div class="action-card">
           <div class="action-icon blue"><i class="bi bi-plus-circle"></i></div>
           <div class="action-title">Registrar Envío</div>
@@ -158,26 +167,58 @@
       <div class="col-6 col-md-3" (click)="router.navigate(['/lista-envios'])">
         <div class="action-card">
           <div class="action-icon green"><i class="bi bi-list-check"></i></div>
+          <div class="action-title">Envíos de mi Sede</div>
+          <div class="action-desc">Gestionar despachos</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3" (click)="router.navigate(['/cotizador'])">
+        <div class="action-card">
+          <div class="action-icon amber"><i class="bi bi-calculator"></i></div>
+          <div class="action-title">Cotizador</div>
+          <div class="action-desc">Calcular tarifas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operador -->
+    <div *ngIf="isOperador" class="row g-3 justify-content-center">
+      <div class="col-6 col-md-4" (click)="router.navigate(['/crear-envio'])">
+        <div class="action-card">
+          <div class="action-icon blue"><i class="bi bi-plus-circle"></i></div>
+          <div class="action-title">Registrar Envío</div>
+          <div class="action-desc">Nuevo despacho en mi sede</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4" (click)="router.navigate(['/lista-envios'])">
+        <div class="action-card">
+          <div class="action-icon green"><i class="bi bi-list-check"></i></div>
           <div class="action-title">Lista de Envíos</div>
-          <div class="action-desc">Ver todos los envíos</div>
+          <div class="action-desc">Ver y actualizar estados</div>
         </div>
       </div>
     </div>
 
     <!-- Cliente -->
-    <div *ngIf="user?.role === 'Cliente'" class="row g-3 justify-content-center">
+    <div *ngIf="isCliente" class="row g-3 justify-content-center">
       <div class="col-6 col-md-3" (click)="router.navigate(['/mis-envios'])">
         <div class="action-card">
           <div class="action-icon amber"><i class="bi bi-box-seam"></i></div>
           <div class="action-title">Mis Envíos</div>
-          <div class="action-desc">Ver estado de paquetes</div>
+          <div class="action-desc">Ver estado de mis paquetes</div>
         </div>
       </div>
       <div class="col-6 col-md-3" (click)="router.navigate(['/cotizador'])">
         <div class="action-card">
           <div class="action-icon blue"><i class="bi bi-calculator"></i></div>
           <div class="action-title">Cotizador</div>
-          <div class="action-desc">Calcular precio</div>
+          <div class="action-desc">Calcular precio de envío</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3" (click)="router.navigate(['/ubicanos'])">
+        <div class="action-card">
+          <div class="action-icon green"><i class="bi bi-geo-alt"></i></div>
+          <div class="action-title">Ubícanos</div>
+          <div class="action-desc">Sedes cercanas</div>
         </div>
       </div>
     </div>

@@ -1,0 +1,132 @@
+<div class="admin-page">
+  <div class="container-fluid px-3 px-md-4">
+
+    <div class="page-header">
+      <div class="page-eyebrow"><i class="bi bi-bar-chart me-1"></i> Administración</div>
+      <h1 class="page-title">Reportes</h1>
+      <p class="page-desc">{{ esAdminGeneral ? 'Resumen global del sistema' : 'Resumen de tu sede: ' + (data?.sede || '') }}</p>
+    </div>
+
+    <div class="empty-state" *ngIf="isLoading">
+      <span class="spinner-border" style="color:#f59e0b;width:2rem;height:2rem;display:block;margin:0 auto 1rem"></span>
+      <div>Cargando reportes...</div>
+    </div>
+
+    <ng-container *ngIf="!isLoading && data">
+
+      <!-- KPIs principales -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="kpi-card blue">
+            <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+            <div class="kpi-value">{{ data.totalEnvios }}</div>
+            <div class="kpi-label">Total envíos</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card green">
+            <div class="kpi-icon"><i class="bi bi-check-circle"></i></div>
+            <div class="kpi-value">{{ data.entregados }}</div>
+            <div class="kpi-label">Entregados</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card amber">
+            <div class="kpi-icon"><i class="bi bi-truck"></i></div>
+            <div class="kpi-value">{{ data.enTransito }}</div>
+            <div class="kpi-label">En tránsito</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card teal">
+            <div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div>
+            <div class="kpi-value">S/ {{ data.ingresosTotal | number:'1.2-2' }}</div>
+            <div class="kpi-label">Ingresos totales</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs Admin General -->
+      <div class="row g-3 mb-4" *ngIf="esAdminGeneral">
+        <div class="col-6 col-md-3">
+          <div class="kpi-card purple">
+            <div class="kpi-icon"><i class="bi bi-people"></i></div>
+            <div class="kpi-value">{{ data.totalUsuarios }}</div>
+            <div class="kpi-label">Usuarios totales</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card green">
+            <div class="kpi-icon"><i class="bi bi-person-check"></i></div>
+            <div class="kpi-value">{{ data.usuariosActivos }}</div>
+            <div class="kpi-label">Usuarios activos</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card teal">
+            <div class="kpi-icon"><i class="bi bi-shop"></i></div>
+            <div class="kpi-value">{{ data.totalSedes }}</div>
+            <div class="kpi-label">Sedes activas</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-card red">
+            <div class="kpi-icon"><i class="bi bi-x-circle"></i></div>
+            <div class="kpi-value">{{ data.cancelados }}</div>
+            <div class="kpi-label">Cancelados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico por estado -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="chart-card">
+            <div class="chart-title">Envíos por estado</div>
+            <div class="bar-list">
+              <div class="bar-item" *ngFor="let entry of porEstadoEntries">
+                <div class="bar-label">
+                  <span class="estado-dot" [class]="estadoClass(entry[0])"></span>
+                  {{ entry[0] }}
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" [class]="estadoClass(entry[0])"
+                       [style.width.%]="pct(entry[1])"></div>
+                </div>
+                <div class="bar-value">{{ entry[1] }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="chart-card">
+            <div class="chart-title">Por tipo de servicio</div>
+            <div class="bar-list">
+              <div class="bar-item" *ngFor="let entry of porServicioEntries">
+                <div class="bar-label">{{ entry[0] }}</div>
+                <div class="bar-track">
+                  <div class="bar-fill transito" [style.width.%]="pct(entry[1])"></div>
+                </div>
+                <div class="bar-value">{{ entry[1] }}</div>
+              </div>
+            </div>
+            <div class="chart-divider"></div>
+            <div class="chart-title mt-3">Por tipo de entrega</div>
+            <div class="bar-list">
+              <div class="bar-item" *ngFor="let entry of ([['SEDE', data.porTipoEntrega?.SEDE || 0], ['DOMICILIO', data.porTipoEntrega?.DOMICILIO || 0]])">
+                <div class="bar-label">{{ entry[0] }}</div>
+                <div class="bar-track">
+                  <div class="bar-fill entregado" [style.width.%]="pct(+entry[1])"></div>
+                </div>
+                <div class="bar-value">{{ entry[1] }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+  </div>
+</div>

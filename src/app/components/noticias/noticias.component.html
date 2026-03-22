@@ -1,44 +1,38 @@
-<section id="noticias">
-    <h2>Últimas Noticias</h2>
-  
-    <div class="noticia" >
-    <!-- <div class="noticia" (click)="toggleDetalle(i)"> -->
-      <img src="assets/img/route.png" alt="" width="60" height="60" />
-      <h3>Nuevas rutas de envío disponibles</h3>
-      <p>Ahora ofrecemos servicios a más ciudades en todo el país...</p>
-    </div>
-    <div class="detalle" *ngIf="noticiaSeleccionada === 'rutas'">
-      <h4>Detalles de Rutas</h4>
-      <p>Hemos agregado nuevas rutas a zonas rurales y ciudades intermedias. Consulta nuestro mapa actualizado.</p>
-    </div>
-  
-    <!-- <div class="noticia" (click)="seleccionarNoticia('empaque')"> -->
-    <div class="noticia" >
-      <img src="assets/img/packaging.png" alt="" width="60" height="60" />
-      <h3>Consejos para empaquetar tus artículos correctamente</h3>
-      <p>Aprende a empaquetar de forma segura para que tus artículos lleguen en perfectas condiciones...</p>
-    </div>
-    <div class="detalle" *ngIf="noticiaSeleccionada == 'empaque'">
-      <h4>Consejos de Empaque</h4>
-      <ul>
-        <li>Usa materiales resistentes como cartón doble capa.</li>
-        <li>Protege objetos frágiles con burbujas o espuma.</li>
-        <li>Etiqueta con cuidado las cajas.</li>
-      </ul>
-    </div>
-  </section>
-  
-<!--section id="noticias">
-    <h2>Últimas Noticias</h2>
-    <div class="noticia">
-        <img src="assets/img/route.png" alt="" width="60" height="60">
-        <h3>Nuevas rutas de envío disponibles</h3>
-        <p>Ahora ofrecemos servicios a más ciudades en todo el país...</p>
-    </div>
-    <div class="noticia">
-        <img src="assets/img/packaging.png" alt="" width="60" height="60">
-        <h3>Consejos para empaquetar tus artículos correctamente</h3>
-        <p>Aprende a empaquetar de forma segura para que tus artículos lleguen en perfectas condiciones...</p>
-    </div>
-</section-->
+<div class="noticias-page">
+  <div class="container">
 
+    <div class="page-header text-center">
+      <div class="page-eyebrow"><i class="bi bi-megaphone me-1"></i> Actualizaciones</div>
+      <h1 class="page-title">Noticias y Novedades</h1>
+      <p class="page-desc">Mantente al tanto de las últimas novedades de Envios Todopais</p>
+    </div>
+
+    <div class="row g-4">
+
+      <div class="col-lg-4 col-md-6" *ngFor="let noticia of noticias; let i = index"
+           [style.animation-delay]="(i * 0.1) + 's'">
+        <div class="noticia-card" (click)="toggleDetalle(noticia.id)"
+             [class.expanded]="noticiaSeleccionada === noticia.id">
+          <div class="noticia-img-wrap">
+            <img [src]="noticia.img" [alt]="noticia.titulo" />
+            <div class="noticia-categoria">{{ noticia.categoria }}</div>
+          </div>
+          <div class="noticia-body">
+            <div class="noticia-fecha">{{ noticia.fecha }}</div>
+            <h3 class="noticia-titulo">{{ noticia.titulo }}</h3>
+            <p class="noticia-resumen">{{ noticia.resumen }}</p>
+            <div class="noticia-detalle" *ngIf="noticiaSeleccionada === noticia.id">
+              <p>{{ noticia.detalle }}</p>
+            </div>
+            <button class="btn-leer">
+              {{ noticiaSeleccionada === noticia.id ? 'Leer menos' : 'Leer más' }}
+              <i class="bi" [class.bi-chevron-down]="noticiaSeleccionada !== noticia.id"
+                            [class.bi-chevron-up]="noticiaSeleccionada === noticia.id"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

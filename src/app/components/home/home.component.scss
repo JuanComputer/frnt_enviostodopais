@@ -307,10 +307,11 @@
     font-size: 1.4rem;
     margin: 0 auto 14px;
 
-    &.blue  { background: rgba(26,86,219,0.15);  color: #93c5fd; }
-    &.green { background: rgba(16,185,129,0.15); color: #6ee7b7; }
-    &.amber { background: rgba(245,158,11,0.15); color: #fcd34d; }
-    &.red   { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+    &.blue   { background: rgba(26,86,219,0.15);   color: #93c5fd; }
+    &.green  { background: rgba(16,185,129,0.15);  color: #6ee7b7; }
+    &.amber  { background: rgba(245,158,11,0.15);  color: #fcd34d; }
+    &.red    { background: rgba(239,68,68,0.15);   color: #fca5a5; }
+    &.purple { background: rgba(139,92,246,0.15);  color: #c4b5fd; }
   }
 
   .action-title {

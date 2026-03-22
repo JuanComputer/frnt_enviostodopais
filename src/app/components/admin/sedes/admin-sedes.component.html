@@ -1,0 +1,124 @@
+<div class="admin-page">
+  <div class="container-fluid px-3 px-md-4">
+
+    <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <div class="page-eyebrow"><i class="bi bi-shop me-1"></i> Administración</div>
+        <h1 class="page-title">Gestión de Sedes</h1>
+        <p class="page-desc">{{ esAdminGeneral ? 'Todas las sedes del sistema' : 'Tu sede asignada' }}</p>
+      </div>
+      <button class="btn-nuevo" (click)="abrirCrear()" *ngIf="esAdminGeneral">
+        <i class="bi bi-plus-circle me-1"></i> Nueva sede
+      </button>
+    </div>
+
+    <div class="empty-state" *ngIf="isLoading">
+      <span class="spinner-border" style="color:#f59e0b;width:2rem;height:2rem;display:block;margin:0 auto 1rem"></span>
+      <div>Cargando sedes...</div>
+    </div>
+
+    <div class="row g-3" *ngIf="!isLoading">
+      <div class="col-md-6 col-lg-4" *ngFor="let s of sedes">
+        <div class="sede-card">
+          <div class="sede-header">
+            <div class="sede-icon"><i class="bi bi-shop"></i></div>
+            <div class="sede-name">{{ s.nombre }}</div>
+          </div>
+          <div class="sede-info">
+            <div class="sede-row"><i class="bi bi-geo-alt-fill"></i><span>{{ s.direccion }}</span></div>
+            <div class="sede-row" *ngIf="s.distrito">
+              <i class="bi bi-map"></i>
+              <span>{{ s.distrito?.nombre }}, {{ s.distrito?.provincia?.nombre }}</span>
+            </div>
+            <div class="sede-row" *ngIf="s.latitud && s.longitud">
+              <i class="bi bi-crosshair"></i>
+              <span>{{ s.latitud }}, {{ s.longitud }}</span>
+            </div>
+          </div>
+          <div class="sede-actions">
+            <button class="btn-action" (click)="abrirEditar(s)">
+              <i class="bi bi-pencil me-1"></i> Editar
+            </button>
+            <button class="btn-action danger" *ngIf="esAdminGeneral"
+                    (click)="confirmarEliminarId = s.id">
+              <i class="bi bi-trash me-1"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-12" *ngIf="sedes.length === 0">
+        <div class="empty-state">
+          <i class="bi bi-shop"></i>
+          <div>No hay sedes registradas</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Confirmar eliminar -->
+<div class="modal-overlay" *ngIf="confirmarEliminarId" (click)="confirmarEliminarId = null">
+  <div class="modal-box small" (click)="$event.stopPropagation()">
+    <div class="modal-box-header">
+      <div class="modal-box-title">¿Eliminar sede?</div>
+    </div>
+    <div class="modal-box-body">
+      <p style="color:#94a3b8;font-size:.9rem">
+        Esta acción no se puede deshacer. Los envíos asociados quedarán sin sede asignada.
+      </p>
+    </div>
+    <div class="modal-box-footer">
+      <button class="btn-modal-close" (click)="confirmarEliminarId = null">Cancelar</button>
+      <button class="btn-modal-danger" (click)="eliminar(confirmarEliminarId!)">
+        <i class="bi bi-trash me-1"></i> Sí, eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal crear/editar -->
+<div class="modal-overlay" *ngIf="modalVisible" (click)="cerrar()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-box-header">
+      <div class="modal-box-title">{{ editando ? 'Editar sede' : 'Nueva sede' }}</div>
+      <button class="modal-close" (click)="cerrar()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-box-body">
+      <form [formGroup]="form" class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Nombre <span class="req">*</span></label>
+          <input formControlName="nombre" class="form-control" [class.is-invalid]="isInvalid('nombre')"
+                 placeholder="Ej: ENVIOS TODOPAIS - Miraflores" />
+          <div class="invalid-feedback">Requerido</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Dirección <span class="req">*</span></label>
+          <input formControlName="direccion" class="form-control" [class.is-invalid]="isInvalid('direccion')"
+                 placeholder="Ej: Av. Larco 234, Miraflores" />
+          <div class="invalid-feedback">Requerido</div>
+        </div>
+        <div class="col-6">
+          <label class="form-label">Latitud</label>
+          <input formControlName="latitud" type="number" step="0.000001" class="form-control"
+                 placeholder="-12.046374" />
+        </div>
+        <div class="col-6">
+          <label class="form-label">Longitud</label>
+          <input formControlName="longitud" type="number" step="0.000001" class="form-control"
+                 placeholder="-77.042793" />
+        </div>
+        <div class="col-12" *ngIf="errorForm">
+          <div class="error-box"><i class="bi bi-exclamation-circle me-1"></i>{{ errorForm }}</div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-box-footer">
+      <button class="btn-modal-close" (click)="cerrar()">Cancelar</button>
+      <button class="btn-modal-guardar" (click)="guardar()" [disabled]="guardando">
+        <span *ngIf="!guardando"><i class="bi bi-check-lg me-1"></i> Guardar</span>
+        <span *ngIf="guardando"><span class="spinner-border spinner-border-sm"></span></span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,20 +1,30 @@
 export interface Envio {
-    id?: string;
-    codigoTracking?: string;
-    fechaCreacion?: string;
-    fechaEstimada?: string;
-    estado?: string;
-    destino?: { id: string; nombre?: string };
-    emisor?: { id?: string; correo?: string };
-    emisorNombre?: string;
-    emisorDni?: string;
-    emisorCorreo?: string;
-    emisorTelefono?: string;
-    receptorNombre?: string;
-    receptorDni?: string;
-    tipoEntrega?: 'SEDE' | 'DOMICILIO';
-    direccionEntrega?: string;
-    referenciaEntrega?: string;
-    fechaActualizacion?: string;
-  }
-  
+  id?: string;
+  codigoTracking?: string;
+  fechaCreacion?: string;
+  fechaEstimada?: string;
+  estado?: string;
+  notaEstado?: string;
+  origen?: { id: string; nombre?: string };
+  destino?: { id: string; nombre?: string };
+  emisor?: { id?: string; correo?: string };
+  emisorNombre?: string;
+  emisorDni?: string;
+  emisorRazonSocial?: string;
+  emisorCorreo?: string;
+  emisorTelefono?: string;
+  receptorNombre?: string;
+  receptorDni?: string;
+  receptorRazonSocial?: string;
+  tipoEntrega?: 'SEDE' | 'DOMICILIO';
+  direccionEntrega?: string;
+  referenciaEntrega?: string;
+  peso?: number;
+  valorDeclarado?: number;
+  descripcionPaquete?: string;
+  tipoServicio?: string;
+  tipoDocumento?: string;
+  numeroDocumento?: string;
+  precioEnvio?: number;
+  fechaActualizacion?: string;
+}

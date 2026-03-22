@@ -1,52 +1,105 @@
+<div class="shipments-page">
+  <div class="container-fluid px-3 px-md-4">
 
-  <section class="hero-section text-center py-5">
-    <h1 class="display-4 fw-bold text-accent">📦 Lista de Envíos</h1>
-    <p class="lead text-light mt-2">
-      Consulta el estado y detalles de tus envíos registrados
-    </p>
-  </section>
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-eyebrow"><i class="bi bi-list-check me-1"></i> Gestión</div>
+      <h1 class="page-title">Lista de Envíos</h1>
+      <p class="page-desc">Gestiona y actualiza el estado de todos los envíos</p>
+    </div>
 
-  <!-- 🔹 Contenido principal -->
-  <section class="container my-4">
-    <div class="card envios-card p-4 shadow-lg rounded-4">
+    <!-- Filtros -->
+    <div class="filters-bar">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-sm-4 col-md-3">
+          <label class="filter-label">Estado</label>
+          <select class="form-select form-select-sm" [(ngModel)]="filtroEstado" (change)="aplicarFiltros()">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let e of todosLosEstados" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="col-12 col-sm-4 col-md-3">
+          <label class="filter-label">Tracking</label>
+          <input type="text" class="form-control form-control-sm" placeholder="PKG-..."
+                 [(ngModel)]="filtroTracking" (input)="aplicarFiltros()" />
+        </div>
+        <div class="col-12 col-sm-4 col-md-3">
+          <label class="filter-label">DNI Receptor</label>
+          <input type="text" class="form-control form-control-sm" placeholder="12345678"
+                 [(ngModel)]="filtroDni" (input)="aplicarFiltros()" />
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2">
+          <button class="btn-filter-clear" (click)="limpiarFiltros()">
+            <i class="bi bi-x-circle me-1"></i> Limpiar
+          </button>
+          <button class="btn-filter-refresh" (click)="cargarEnvios()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+          </button>
+        </div>
+      </div>
+      <div class="filter-count" *ngIf="!isLoading">
+        {{ filteredShipments.length }} envío{{ filteredShipments.length !== 1 ? 's' : '' }}
+        <span *ngIf="filteredShipments.length !== shipments.length"> de {{ shipments.length }}</span>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="empty-state" *ngIf="isLoading">
+      <span class="spinner-border" style="color:#f59e0b;width:2rem;height:2rem;display:block;margin:0 auto 1rem"></span>
+      <div>Cargando envíos...</div>
+    </div>
+
+    <!-- Vacío -->
+    <div class="empty-state" *ngIf="!isLoading && filteredShipments.length === 0">
+      <i class="bi bi-inbox"></i>
+      <div>No se encontraron envíos</div>
+      <small *ngIf="filtroEstado || filtroDni || filtroTracking">Prueba con otros filtros</small>
+    </div>
+
+    <!-- Tabla desktop -->
+    <div class="table-card d-none d-md-block" *ngIf="!isLoading && filteredShipments.length > 0">
       <div class="table-responsive">
-        <table class="table table-dark table-hover align-middle envios-table">
+        <table class="table envios-table align-middle mb-0">
           <thead>
             <tr>
-              <th class="col-tracking">Tracking</th>
-              <th class="col-emisor">Emisor</th>
-              <th class="col-receptor">Receptor</th>
-              <th class="col-destino">Destino</th>
-              <th class="col-estado">Estado</th>
-              <th class="col-acciones text-center">Acciones</th>
+              <th>Tracking</th>
+              <th>Emisor</th>
+              <th>Receptor</th>
+              <th>Origen → Destino</th>
+              <th>Doc.</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let shipment of shipments" class="fila-envio">
-              <td class="fw-semibold text-accent">{{ shipment.codigoTracking }}</td>
-              <td>{{ shipment.emisorNombre || '—' }}</td>
-              <td>{{ shipment.receptorNombre }}</td>
-              <td class="text-truncate" title="{{ shipment.destino?.nombre }}">
-                {{ shipment.destino?.nombre }}
+            <tr *ngFor="let s of filteredShipments">
+              <td><span class="tracking-code">{{ s.codigoTracking }}</span></td>
+              <td>
+                <div class="persona-name">{{ s.emisorNombre || s.emisorRazonSocial || '—' }}</div>
+                <div class="persona-doc">{{ s.emisorDni }}</div>
               </td>
               <td>
-                <span
-                  class="badge"
-                  [ngClass]="{
-                    'bg-warning text-dark': shipment.estado === 'En tránsito',
-                    'bg-success': shipment.estado === 'Entregado',
-                    'bg-secondary': shipment.estado === 'Pendiente'
-                  }"
-                >
-                  {{ shipment.estado }}
-                </span>
+                <div class="persona-name">{{ s.receptorNombre || s.receptorRazonSocial }}</div>
+                <div class="persona-doc">{{ s.receptorDni }}</div>
               </td>
+              <td>
+                <div class="ruta-cell">
+                  <span class="ruta-sede">{{ s.origen?.nombre || '—' }}</span>
+                  <i class="bi bi-arrow-right ruta-arrow"></i>
+                  <span class="ruta-sede">{{ s.tipoEntrega === 'DOMICILIO' ? 'Domicilio' : (s.destino?.nombre || '—') }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="doc-num" *ngIf="s.numeroDocumento">{{ s.numeroDocumento }}</span>
+                <span *ngIf="!s.numeroDocumento" style="color:#334155">—</span>
+              </td>
+              <td><span class="estado-pill" [class]="estadoClass(s.estado)">{{ s.estado }}</span></td>
               <td class="text-center">
-                <button
-                  class="btn btn-accent btn-sm rounded-pill px-3"
-                  (click)="verDetalles(shipment)"
-                >
-                  <i class="bi bi-eye"></i> Ver
+                <button class="btn-action" (click)="verDetalles(s)" title="Ver detalles">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn-action pdf" (click)="verBoleta(s)" title="Ver PDF" *ngIf="s.id && !cargandoPdf">
+                  <i class="bi bi-file-earmark-pdf"></i>
                 </button>
               </td>
             </tr>
@@ -54,31 +107,177 @@
         </table>
       </div>
     </div>
-  </section>
 
-  <!-- 🔹 Modal Angular -->
-  <div class="custom-modal-backdrop" *ngIf="mostrarModal"></div>
-
-  <div class="custom-modal" *ngIf="mostrarModal">
-    <div class="custom-modal-content rounded-4 shadow-lg p-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="text-accent fw-bold mb-0">Detalles del Envío</h4>
-        <button class="btn-close" (click)="cerrarModal()"></button>
-      </div>
-
-      <div *ngIf="selectedShipment">
-        <p><strong>Código de Seguimiento:</strong> {{ selectedShipment.codigoTracking }}</p>
-        <p><strong>Receptor:</strong> {{ selectedShipment.receptorNombre }}</p>
-        <p><strong>Emisor:</strong> {{ selectedShipment.emisorNombre || '—' }}</p>
-        <p><strong>Destino:</strong> {{ selectedShipment.destino?.nombre }}</p>
-        <p><strong>Estado:</strong> 
-          <span class="badge bg-info text-dark">{{ selectedShipment.estado }}</span>
-        </p>
-        <p><strong>Fecha Estimada:</strong> {{ selectedShipment.fechaEstimada | date:'mediumDate' }}</p>
-      </div>
-
-      <div class="text-end mt-4">
-        <button class="btn btn-secondary rounded-pill px-4" (click)="cerrarModal()">Cerrar</button>
+    <!-- Cards mobile -->
+    <div class="mobile-cards d-md-none" *ngIf="!isLoading && filteredShipments.length > 0">
+      <div class="mobile-card" *ngFor="let s of filteredShipments" (click)="verDetalles(s)">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="tracking-code">{{ s.codigoTracking }}</span>
+          <span class="estado-pill" [class]="estadoClass(s.estado)">{{ s.estado }}</span>
+        </div>
+        <div class="mobile-card-row">
+          <i class="bi bi-person"></i>
+          <span>{{ s.emisorNombre || s.emisorRazonSocial || '—' }}</span>
+        </div>
+        <div class="mobile-card-row">
+          <i class="bi bi-person-check"></i>
+          <span>{{ s.receptorNombre || s.receptorRazonSocial }}</span>
+        </div>
+        <div class="mobile-card-row" *ngIf="s.destino || s.direccionEntrega">
+          <i class="bi bi-geo-alt"></i>
+          <span>{{ s.tipoEntrega === 'DOMICILIO' ? 'Domicilio' : s.destino?.nombre }}</span>
+        </div>
       </div>
     </div>
+
   </div>
+</div>
+
+<!-- ══ MODAL DETALLES ══ -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()" *ngIf="selectedShipment">
+
+    <div class="modal-box-header">
+      <div>
+        <div class="modal-box-title">Detalle del Envío</div>
+        <div class="modal-tracking">{{ selectedShipment.codigoTracking }}</div>
+      </div>
+      <button class="modal-close" (click)="cerrarModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="modal-box-body">
+
+      <!-- Si NO está en modo cambio de estado -->
+      <ng-container *ngIf="!mostrarCambioEstado">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="detail-label">Estado actual</div>
+            <span class="estado-pill" [class]="estadoClass(selectedShipment.estado)">
+              {{ selectedShipment.estado }}
+            </span>
+          </div>
+          <div class="col-6" *ngIf="selectedShipment.fechaEstimada">
+            <div class="detail-label">Fecha estimada</div>
+            <div class="detail-value">{{ selectedShipment.fechaEstimada | date:'dd/MM/yyyy' }}</div>
+          </div>
+          <div class="col-6">
+            <div class="detail-label">Emisor</div>
+            <div class="detail-value">{{ selectedShipment.emisorNombre || selectedShipment.emisorRazonSocial || '—' }}</div>
+            <div class="detail-sub">{{ selectedShipment.emisorDni }}</div>
+          </div>
+          <div class="col-6">
+            <div class="detail-label">Receptor</div>
+            <div class="detail-value">{{ selectedShipment.receptorNombre || selectedShipment.receptorRazonSocial }}</div>
+            <div class="detail-sub">{{ selectedShipment.receptorDni }}</div>
+          </div>
+          <div class="col-6">
+            <div class="detail-label">Origen</div>
+            <div class="detail-value">{{ selectedShipment.origen?.nombre || '—' }}</div>
+          </div>
+          <div class="col-6">
+            <div class="detail-label">Destino</div>
+            <div class="detail-value">
+              {{ selectedShipment.tipoEntrega === 'DOMICILIO' ? 'Domicilio' : (selectedShipment.destino?.nombre || '—') }}
+            </div>
+            <div class="detail-sub" *ngIf="selectedShipment.direccionEntrega">{{ selectedShipment.direccionEntrega }}</div>
+          </div>
+          <div class="col-6" *ngIf="selectedShipment.peso">
+            <div class="detail-label">Peso</div>
+            <div class="detail-value">{{ selectedShipment.peso }} kg</div>
+          </div>
+          <div class="col-6" *ngIf="selectedShipment.precioEnvio">
+            <div class="detail-label">Precio</div>
+            <div class="detail-value" style="color:#f59e0b;font-weight:700">
+              S/ {{ selectedShipment.precioEnvio | number:'1.2-2' }}
+            </div>
+          </div>
+          <div class="col-12" *ngIf="selectedShipment.descripcionPaquete">
+            <div class="detail-label">Contenido</div>
+            <div class="detail-value">{{ selectedShipment.descripcionPaquete }}</div>
+          </div>
+          <div class="col-12" *ngIf="selectedShipment.notaEstado">
+            <div class="detail-label">Última nota</div>
+            <div class="nota-box">{{ selectedShipment.notaEstado }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Si ESTÁ en modo cambio de estado -->
+      <ng-container *ngIf="mostrarCambioEstado">
+        <div class="cambio-estado-panel">
+          <div class="cambio-titulo">
+            <i class="bi bi-arrow-repeat me-2"></i>Cambiar estado del envío
+          </div>
+          <div class="estado-actual-row">
+            Estado actual: <span class="estado-pill ms-2" [class]="estadoClass(selectedShipment.estado)">
+              {{ selectedShipment.estado }}
+            </span>
+          </div>
+
+          <div class="mt-3" *ngIf="estadosValidos.length === 0">
+            <div class="alert-info-box">
+              <i class="bi bi-info-circle me-2"></i>
+              Este envío no tiene más transiciones disponibles.
+            </div>
+          </div>
+
+          <div class="mt-3" *ngIf="estadosValidos.length > 0">
+            <label class="ce-label">Nuevo estado <span style="color:#f87171">*</span></label>
+            <div class="estados-grid">
+              <button class="estado-btn" *ngFor="let e of estadosValidos"
+                      [class.selected]="nuevoEstado === e"
+                      [class]="'estado-btn ' + estadoClass(e)"
+                      (click)="nuevoEstado = e">
+                {{ e }}
+              </button>
+            </div>
+
+            <div class="mt-3" *ngIf="nuevoEstado">
+              <label class="ce-label">
+                Nota / comentario
+                <span *ngIf="requiereNota" style="color:#f87171">* (obligatorio)</span>
+              </label>
+              <textarea class="ce-textarea" rows="3" [(ngModel)]="notaEstado"
+                        [placeholder]="requiereNota ? 'Ej: Cliente ausente, nadie abrió la puerta' : 'Ej: Paquete recibido en sede central'"></textarea>
+            </div>
+
+            <div class="error-box" *ngIf="errorEstado">
+              <i class="bi bi-exclamation-circle me-1"></i>{{ errorEstado }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <div class="modal-box-footer">
+      <!-- Modo detalles -->
+      <ng-container *ngIf="!mostrarCambioEstado">
+        <button class="btn-modal-pdf" *ngIf="selectedShipment.id && !cargandoPdf"
+                (click)="verBoleta(selectedShipment)">
+          <i class="bi bi-file-earmark-pdf"></i> Ver PDF
+        </button>
+        <button class="btn-modal-estado" (click)="abrirCambioEstado()">
+          <i class="bi bi-arrow-repeat"></i> Cambiar estado
+        </button>
+        <button class="btn-modal-close" (click)="cerrarModal()">Cerrar</button>
+      </ng-container>
+
+      <!-- Modo cambio de estado -->
+      <ng-container *ngIf="mostrarCambioEstado">
+        <button class="btn-modal-close" (click)="mostrarCambioEstado = false">
+          <i class="bi bi-arrow-left me-1"></i> Volver
+        </button>
+        <button class="btn-modal-estado" (click)="confirmarCambioEstado()"
+                [disabled]="!nuevoEstado || guardandoEstado">
+          <span *ngIf="!guardandoEstado"><i class="bi bi-check-lg me-1"></i> Confirmar</span>
+          <span *ngIf="guardandoEstado">
+            <span class="spinner-border spinner-border-sm" style="width:.8rem;height:.8rem"></span>
+            Guardando...
+          </span>
+        </button>
+      </ng-container>
+    </div>
+
+  </div>
+</div>
