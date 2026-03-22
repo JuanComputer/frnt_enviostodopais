@@ -1,55 +1,11 @@
-// import { Injectable } from '@angular/core';
-// import { HttpClient } from '@angular/common/http';
-// import { Observable, map } from 'rxjs';
-
-// @Injectable({ providedIn: 'root' })
-// export class AuthService {
-//   private base = 'http://localhost:8080/api'; // ajusta si tu backend es diferente
-
-//   constructor(private http: HttpClient) {}
-
-//   login(correo: string, password: string): Observable<any> {
-//     return this.http.post<Response>(`${this.base}/auth/login`, { correo, password })
-//       .pipe(map((res: any) => {
-//         if (res?.data?.token) {
-//           localStorage.setItem('user', JSON.stringify({
-//             id: res.data.id,
-//             correo: res.data.email,
-//             role: res.data.role,
-//             token: res.data.token
-//           }));
-//           //localStorage.setItem('token', res.data.token);
-//           //localStorage.setItem('role', res.data.role);
-//         }
-//         return res;
-//       }));
-//   }
-
-//   logout() {
-//     localStorage.removeItem('token');
-//     localStorage.removeItem('role');
-//   }
-
-//   getToken(): string | null {
-//     return localStorage.getItem('token');
-//   }
-
-//   getRole(): string | null {
-//     return localStorage.getItem('role');
-//   }
-
-//   isLogged(): boolean {
-//     return !!this.getToken();
-//   }
-// }
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private base = 'https://back-enviostodopais.onrender.com/api'; // ajusta si tu backend es diferente
+  private base = `${environment.api}/api`; // ajusta si tu backend es diferente
 
   constructor(private http: HttpClient) {}
 

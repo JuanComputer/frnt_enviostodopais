@@ -4,10 +4,11 @@ import { Tienda } from '../../shared/models/tienda.model';
 import { Observable, throwError } from 'rxjs';
 import { catchError, take, timeout } from 'rxjs/operators';
 import { ResponseDto } from '../../shared/models/response-dto';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TiendasService {
-  private base = 'https://back-enviostodopais.onrender.com/api/tiendas';
+  private base = `${environment.api}/api/tiendas`;
 
   constructor(private http: HttpClient) {}
 

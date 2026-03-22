@@ -21,7 +21,12 @@ export class CrearEnvioComponent implements OnInit {
   tiendas: any[] = [];
   isLoading = false;
 
-  // modal data
+  // Boleta generada
+  boletaBase64: string | null = null;
+  boletaFilename = '';
+  ultimoEnvioId: string | null = null;
+
+  // Modal
   modalVisible = false;
   modalSuccess = false;
   modalTitulo = '';
@@ -30,13 +35,28 @@ export class CrearEnvioComponent implements OnInit {
   modalEstado = '';
 
   form = this.fb.group({
-    receptorNombre: ['', Validators.required],
-    receptorDni: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8)]],
-    tipoEntrega: ['SEDE', Validators.required],
-    destinoId: [null],
+    // Emisor
+    emisorTipoDoc:  ['DNI'],
+    emisorDni:      ['', [Validators.required, Validators.minLength(8), Validators.maxLength(11)]],
+    emisorNombre:   ['', Validators.required],
+    emisorTelefono: [''],
+    emisorCorreo:   ['', Validators.email],
+
+    // Receptor
+    receptorTipoDoc: ['DNI'],
+    receptorDni:     ['', [Validators.required, Validators.minLength(8), Validators.maxLength(11)]],
+    receptorNombre:  ['', Validators.required],
+
+    // Entrega
+    tipoEntrega:      ['SEDE', Validators.required],
+    destinoId:        [null as string | null],
     direccionEntrega: [''],
-    emisorNombre: [''],
-    emisorCorreo: ['', Validators.email]
+
+    // Documento
+    tipoDocumento:     ['BOLETA', Validators.required],
+    precioEnvio:       [null as number | null, [Validators.required, Validators.min(0)]],
+    descripcionPaquete:['', Validators.required],
+    fechaEstimada:     [''],
   });
 
   ngOnInit(): void {
@@ -55,17 +75,64 @@ export class CrearEnvioComponent implements OnInit {
 
   crear() {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       this.showModal(false, 'Campos incompletos', 'Por favor, completa todos los campos obligatorios.');
       return;
     }
 
     this.isLoading = true;
-    this.enviosSvc.crear(this.form.value).subscribe({
+    this.boletaBase64 = null;
+
+    const v = this.form.value;
+
+    // Construir payload adaptado al backend
+    const payload = {
+      emisorNombre:       v.emisorTipoDoc === 'RUC' ? null : v.emisorNombre,
+      emisorRazonSocial:  v.emisorTipoDoc === 'RUC' ? v.emisorNombre : null,
+      emisorDni:          v.emisorDni,
+      emisorTelefono:     v.emisorTelefono || null,
+      emisorCorreo:       v.emisorCorreo || null,
+      receptorNombre:     v.receptorTipoDoc === 'RUC' ? null : v.receptorNombre,
+      receptorRazonSocial:v.receptorTipoDoc === 'RUC' ? v.receptorNombre : null,
+      receptorDni:        v.receptorDni,
+      destinoId:          v.destinoId || null,
+      tipoEntrega:        v.tipoEntrega,
+      direccionEntrega:   v.direccionEntrega || null,
+      tipoDocumento:      v.tipoDocumento,
+      precioEnvio:        v.precioEnvio,
+      descripcionPaquete: v.descripcionPaquete,
+      fechaEstimada:      v.fechaEstimada || null,
+    };
+
+    this.enviosSvc.crear(payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         if (res?.statusCode === 200) {
-          this.showModal(true, 'Envío creado', res.message, res.data.codigoTracking, res.data.estado);
-          this.form.reset({ tipoEntrega: 'SEDE' });
+          const envioId = res.data?.id;
+          this.ultimoEnvioId = envioId;
+
+          this.showModal(true, 'Envío registrado', res.message,
+            res.data?.codigoTracking, res.data?.estado);
+
+          this.form.reset({
+            emisorTipoDoc: 'DNI',
+            receptorTipoDoc: 'DNI',
+            tipoEntrega: 'SEDE',
+            tipoDocumento: 'BOLETA'
+          });
+
+          // Obtener el PDF automáticamente
+          if (envioId) {
+            this.enviosSvc.generarBoleta(envioId).subscribe({
+              next: (boletaRes: any) => {
+                if (boletaRes?.statusCode === 200) {
+                  this.boletaBase64 = boletaRes.data.base64;
+                  this.boletaFilename = boletaRes.data.filename;
+                }
+              },
+              error: () => console.warn('No se pudo obtener la boleta PDF')
+            });
+          }
         } else {
           this.showModal(false, 'Error', res?.message || 'No se pudo crear el envío.');
         }
@@ -77,12 +144,35 @@ export class CrearEnvioComponent implements OnInit {
     });
   }
 
-  showModal(success: boolean, titulo: string, mensaje: string, codigo: string = '', estado: string = '') {
+  abrirBoleta() {
+    if (!this.boletaBase64) return;
+    const byteChars = atob(this.boletaBase64);
+    const byteNums = Array.from(byteChars, c => c.charCodeAt(0));
+    const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }
+
+  descargarBoleta() {
+    if (!this.boletaBase64) return;
+    const byteChars = atob(this.boletaBase64);
+    const byteNums = Array.from(byteChars, c => c.charCodeAt(0));
+    const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = this.boletaFilename || 'boleta.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  showModal(success: boolean, titulo: string, mensaje: string,
+            codigo = '', estado = '') {
     this.modalSuccess = success;
-    this.modalTitulo = titulo;
+    this.modalTitulo  = titulo;
     this.modalMensaje = mensaje;
-    this.modalCodigo = codigo;
-    this.modalEstado = estado;
+    this.modalCodigo  = codigo;
+    this.modalEstado  = estado;
     this.modalVisible = true;
   }
 

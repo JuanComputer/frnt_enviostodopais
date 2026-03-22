@@ -1,12 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-
+import { environment } from '../../environments/environment';
 @Injectable({
     providedIn: 'root'
   })
   export class MaestraService {
-    private API_ENVIOS= "https://back-enviostodopais.onrender.com/maestra"; // Server para API_CONTRATO
+    private API_ENVIOS= `${environment.api}/maestra`; // Server para API_CONTRATO
 
   constructor(
     private httpClient: HttpClient, // httpClient

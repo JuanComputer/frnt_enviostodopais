@@ -3,11 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Departamento, Distrito,Provincia } from '../shared/models/ubigeo.model'; 
 import { ResponseDto } from '../shared/models/response-dto'; 
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UbicacionService {
 
-  private base = 'https://back-enviostodopais.onrender.com/api/ubigeo';
+  private base = `${environment.api}/api/ubigeo`;
 
   constructor(private http: HttpClient) {}
 

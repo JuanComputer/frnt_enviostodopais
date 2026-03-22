@@ -1,26 +1,92 @@
 <div class="crear-envio-container py-5">
   <div class="card envio-card shadow-lg mx-auto p-4 rounded-4">
-    <h3 class="text-center text-accent fw-bold mb-4">Registrar Envío</h3>
+    <h3 class="text-center text-accent fw-bold mb-1">Registrar Envío</h3>
+    <p class="text-center text-muted small mb-4">Complete los datos para generar el envío y su documento</p>
 
     <form [formGroup]="form" (ngSubmit)="crear()" class="row g-3">
+
+      <!-- EMISOR -->
+      <div class="col-12">
+        <h6 class="section-label"><i class="bi bi-person-fill me-1"></i> Datos del Emisor (Remitente)</h6>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Tipo de documento emisor</label>
+        <select formControlName="emisorTipoDoc" class="form-select">
+          <option value="DNI">DNI (persona natural)</option>
+          <option value="RUC">RUC (empresa)</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">{{ form.get('emisorTipoDoc')?.value === 'RUC' ? 'RUC' : 'DNI' }} del emisor</label>
+        <input formControlName="emisorDni" class="form-control"
+               [placeholder]="form.get('emisorTipoDoc')?.value === 'RUC' ? 'Ej: 20512345678' : 'Ej: 76543210'"
+               [maxlength]="form.get('emisorTipoDoc')?.value === 'RUC' ? 11 : 8" />
+        <small class="text-danger" *ngIf="form.get('emisorDni')?.touched && form.get('emisorDni')?.invalid">
+          Ingrese un {{ form.get('emisorTipoDoc')?.value === 'RUC' ? 'RUC de 11 dígitos' : 'DNI de 8 dígitos' }}.
+        </small>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">{{ form.get('emisorTipoDoc')?.value === 'RUC' ? 'Razón social' : 'Nombre completo' }}</label>
+        <input formControlName="emisorNombre" class="form-control"
+               [placeholder]="form.get('emisorTipoDoc')?.value === 'RUC' ? 'Nombre de la empresa' : 'Ej: Juan Pérez López'" />
+        <small class="text-danger" *ngIf="form.get('emisorNombre')?.touched && form.get('emisorNombre')?.invalid">
+          Este campo es obligatorio.
+        </small>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Teléfono del emisor <span class="text-muted">(opcional)</span></label>
+        <input formControlName="emisorTelefono" class="form-control" placeholder="Ej: 999888777" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Correo del emisor</label>
+        <input formControlName="emisorCorreo" type="email" class="form-control" placeholder="correo@ejemplo.com" />
+        <small class="text-danger" *ngIf="form.get('emisorCorreo')?.touched && form.get('emisorCorreo')?.invalid">
+          Correo inválido.
+        </small>
+      </div>
+
       <!-- RECEPTOR -->
-      <div class="col-md-6">
-        <label class="form-label">Nombre del receptor</label>
-        <input formControlName="receptorNombre" class="form-control" placeholder="Ej: Juan Pérez" />
-        <small class="text-danger" *ngIf="form.get('receptorNombre')?.touched && form.get('receptorNombre')?.invalid">
-          El nombre del receptor es obligatorio.
-        </small>
+      <div class="col-12 mt-2">
+        <h6 class="section-label"><i class="bi bi-person-check-fill me-1"></i> Datos del Receptor (Destinatario)</h6>
       </div>
 
-      <div class="col-md-6">
-        <label class="form-label">DNI del receptor</label>
-        <input formControlName="receptorDni" class="form-control" placeholder="Ej: 76543210" maxlength="8" />
+      <div class="col-md-4">
+        <label class="form-label">Tipo de documento receptor</label>
+        <select formControlName="receptorTipoDoc" class="form-select">
+          <option value="DNI">DNI (persona natural)</option>
+          <option value="RUC">RUC (empresa)</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">{{ form.get('receptorTipoDoc')?.value === 'RUC' ? 'RUC' : 'DNI' }} del receptor</label>
+        <input formControlName="receptorDni" class="form-control"
+               [placeholder]="form.get('receptorTipoDoc')?.value === 'RUC' ? 'Ej: 20512345678' : 'Ej: 76543210'"
+               [maxlength]="form.get('receptorTipoDoc')?.value === 'RUC' ? 11 : 8" />
         <small class="text-danger" *ngIf="form.get('receptorDni')?.touched && form.get('receptorDni')?.invalid">
-          DNI inválido (8 dígitos).
+          Ingrese un {{ form.get('receptorTipoDoc')?.value === 'RUC' ? 'RUC de 11 dígitos' : 'DNI de 8 dígitos' }}.
         </small>
       </div>
 
-      <!-- TIPO ENTREGA -->
+      <div class="col-md-4">
+        <label class="form-label">{{ form.get('receptorTipoDoc')?.value === 'RUC' ? 'Razón social' : 'Nombre completo' }} del receptor</label>
+        <input formControlName="receptorNombre" class="form-control"
+               [placeholder]="form.get('receptorTipoDoc')?.value === 'RUC' ? 'Nombre de la empresa' : 'Ej: María García'" />
+        <small class="text-danger" *ngIf="form.get('receptorNombre')?.touched && form.get('receptorNombre')?.invalid">
+          Este campo es obligatorio.
+        </small>
+      </div>
+
+      <!-- ENTREGA -->
+      <div class="col-12 mt-2">
+        <h6 class="section-label"><i class="bi bi-truck me-1"></i> Modalidad de Entrega</h6>
+      </div>
+
       <div class="col-md-6">
         <label class="form-label">Tipo de entrega</label>
         <select formControlName="tipoEntrega" class="form-select">
@@ -29,49 +95,93 @@
         </select>
       </div>
 
-      <!-- DESTINO -->
       <div *ngIf="form.get('tipoEntrega')?.value === 'SEDE'" class="col-md-6">
         <label class="form-label">Tienda destino</label>
-        <div class="select-wrapper">
-          <select formControlName="destinoId" class="form-select">
-            <option [ngValue]="null">-- Seleccione una tienda --</option>
-            <option *ngFor="let t of tiendas" [ngValue]="t.id">{{ t.nombre }}</option>
-          </select>
-        </div>
+        <select formControlName="destinoId" class="form-select">
+          <option [ngValue]="null">-- Seleccione una tienda --</option>
+          <option *ngFor="let t of tiendas" [ngValue]="t.id">{{ t.nombre }}</option>
+        </select>
       </div>
 
-      <!-- DOMICILIO -->
       <div *ngIf="form.get('tipoEntrega')?.value === 'DOMICILIO'" class="col-12">
         <label class="form-label">Dirección de entrega</label>
         <input formControlName="direccionEntrega" class="form-control" placeholder="Ej: Calle Los Olivos 123, Lima" />
         <small class="text-danger" *ngIf="form.get('direccionEntrega')?.touched && form.get('direccionEntrega')?.invalid">
-          La dirección es requerida para entrega a domicilio.
+          La dirección es requerida.
         </small>
       </div>
 
-      <!-- EMISOR -->
-      <div class="col-md-6 mt-2">
-        <label class="form-label">Emisor (opcional)</label>
-        <input formControlName="emisorNombre" class="form-control" placeholder="Nombre del emisor" />
+      <!-- BOLETA -->
+      <div class="col-12 mt-2">
+        <h6 class="section-label"><i class="bi bi-receipt me-1"></i> Documento y Paquete</h6>
       </div>
 
-      <div class="col-md-6 mt-2">
-        <label class="form-label">Correo del emisor (opcional)</label>
-        <input formControlName="emisorCorreo" type="email" class="form-control" placeholder="correo@ejemplo.com" />
+      <div class="col-md-4">
+        <label class="form-label">Tipo de documento</label>
+        <select formControlName="tipoDocumento" class="form-select">
+          <option value="BOLETA">Boleta de Venta</option>
+          <option value="FACTURA">Factura</option>
+        </select>
+        <small class="text-muted" *ngIf="form.get('tipoDocumento')?.value === 'FACTURA'">
+          La factura requiere RUC del emisor.
+        </small>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Precio del envío (S/.)</label>
+        <div class="input-group">
+          <span class="input-group-text">S/.</span>
+          <input formControlName="precioEnvio" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+        </div>
+        <small class="text-danger" *ngIf="form.get('precioEnvio')?.touched && form.get('precioEnvio')?.invalid">
+          Ingrese un precio válido.
+        </small>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Fecha estimada de entrega</label>
+        <input formControlName="fechaEstimada" type="date" class="form-control" />
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Descripción del paquete / contenido</label>
+        <textarea formControlName="descripcionPaquete" class="form-control" rows="2"
+                  placeholder="Ej: Ropa, libros, electrónico — 2kg aprox."></textarea>
+        <small class="text-danger" *ngIf="form.get('descripcionPaquete')?.touched && form.get('descripcionPaquete')?.invalid">
+          Ingrese una descripción del paquete.
+        </small>
       </div>
 
       <!-- BOTÓN -->
       <div class="col-12 text-center mt-4">
         <button class="btn btn-accent px-5 py-2" type="submit" [disabled]="form.invalid || isLoading">
-          <span *ngIf="!isLoading"><i class="bi bi-send"></i> Registrar Envío</span>
-          <div *ngIf="isLoading" class="spinner-border spinner-border-sm text-light me-2"></div>
-          {{ isLoading ? 'Registrando...' : '' }}
+          <span *ngIf="!isLoading"><i class="bi bi-send me-1"></i> Registrar Envío</span>
+          <span *ngIf="isLoading">
+            <span class="spinner-border spinner-border-sm me-1"></span> Registrando...
+          </span>
         </button>
       </div>
     </form>
   </div>
-</div>
 
+  <!-- Panel boleta -->
+  <div *ngIf="boletaBase64" class="card boleta-panel shadow mx-auto mt-4 p-4 rounded-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h6 class="mb-0 text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Documento generado</h6>
+        <small class="text-muted">{{ boletaFilename }}</small>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="abrirBoleta()">
+          <i class="bi bi-box-arrow-up-right me-1"></i> Ver en nueva pestaña
+        </button>
+        <button class="btn btn-outline-secondary" (click)="descargarBoleta()">
+          <i class="bi bi-download me-1"></i> Descargar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <app-modal-mensaje
   [visible]="modalVisible"

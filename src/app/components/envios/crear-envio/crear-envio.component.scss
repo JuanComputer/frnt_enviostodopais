@@ -137,3 +137,19 @@
     box-shadow: 0 0 8px rgba(255, 98, 0, 0.4);
   }
   
+.section-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1a56db;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 6px;
+  margin-bottom: 0;
+}
+
+.boleta-panel {
+  max-width: 700px;
+  border: 1.5px solid #bbf7d0;
+  background: #f0fdf4;
+}

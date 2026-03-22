@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { StorageService } from '../../services/storage.service';
+import { environment } from '../../../environments/environment'
 
 @Component({
   selector: 'app-home',
@@ -39,7 +40,7 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    this.http.get(`https://back-enviostodopais.onrender.com/api/envios/tracking/${this.trackingCode}`).subscribe({
+    this.http.get(`${environment.api}/api/envios/tracking/${this.trackingCode}`).subscribe({
       next: (res: any) => {
         if (res.statusCode === 200 && res.data) {
           this.envioEncontrado = res.data;

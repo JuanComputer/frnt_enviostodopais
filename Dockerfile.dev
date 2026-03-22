@@ -1,0 +1,12 @@
+FROM node:20
+
+WORKDIR /app
+
+# instala dependencias (usando cache si hace falta)
+COPY package*.json ./
+RUN npm install --force
+
+# código se monta por volumen → no COPY aquí
+EXPOSE 4200
+
+CMD ["npm", "start"]

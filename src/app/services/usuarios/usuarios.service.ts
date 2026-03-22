@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ResponseDto } from '../../shared/models/response-dto';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UsuariosService {
-  private base = 'https://back-enviostodopais.onrender.com/api/usuarios';
+  private base = `${environment.api}/api/usuarios`;
 
   constructor(private http: HttpClient) {}
 

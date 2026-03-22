@@ -3,10 +3,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Envio } from '../../shared/models/envio.model';
 import { ResponseDto } from '../../shared/models/response-dto';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class EnviosService {
-  private base = 'https://back-enviostodopais.onrender.com/api/envios';
+  private base = `${environment.api}/api/envios`;
 
   constructor(private http: HttpClient) {}
 
@@ -38,5 +39,11 @@ export class EnviosService {
 
   eliminar(id: string) {
     return this.http.delete<ResponseDto<string>>(`${this.base}/${id}`);
+  }
+
+  generarBoleta(id: string) {
+    return this.http.get<ResponseDto<{ base64: string; filename: string; mimeType: string }>>(
+      `${this.base}/${id}/boleta`
+    );
   }
 }
