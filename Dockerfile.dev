@@ -1,12 +1,12 @@
-FROM node:20
+FROM node:20-alpine
 
 WORKDIR /app
 
-# instala dependencias (usando cache si hace falta)
 COPY package*.json ./
 RUN npm install --force
 
-# código se monta por volumen → no COPY aquí
+# El código se monta por volumen en dev
 EXPOSE 4200
 
-CMD ["npm", "start"]
+# Escucha en todas las interfaces (necesario dentro de Docker)
+CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--poll", "2000"]

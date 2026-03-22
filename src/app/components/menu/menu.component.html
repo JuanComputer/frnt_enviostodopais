@@ -1,115 +1,50 @@
-<!-- <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
+<nav class="navbar navbar-expand-lg fixed-top" [class.scrolled]="isScrolled">
   <div class="container-fluid px-4">
-    
-    <a class="navbar-brand fw-bold text-accent" routerLink="/">
-      <i class="bi bi-truck"></i> ENVIOS TODO PAÍS
+
+    <!-- Logo / Marca -->
+    <a class="navbar-brand" routerLink="/">
+      <i class="bi bi-truck-front-fill"></i>
+      ENVIOS TODOPAIS
     </a>
 
-
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-    >
+    <!-- Toggle mobile -->
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-  
+    <!-- Links -->
     <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-      <ul class="navbar-nav mx-auto">
+      <ul class="navbar-nav mx-auto gap-1">
         <li class="nav-item">
-          <a routerLink="/" routerLinkActive="active-link" class="nav-link">Inicio</a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/ubicanos" routerLinkActive="active-link" class="nav-link">Ubícanos</a>
-        </li>
-
-        <li class="nav-item">
-          <a routerLink="/cotizador" routerLinkActive="active-link" class="nav-link">Cotizador</a>
-        </li>        
-
-     
-        <li class="nav-item" *ngIf="isAuthenticated && (userRole === 'Administrador' || userRole === 'Operador')">
-          <a routerLink="/crear-envio" routerLinkActive="active-link" class="nav-link">Gestión de Envíos</a>
-        </li>
-
-        <li class="nav-item" *ngIf="isAuthenticated && userRole === 'Cliente'">
-          <a routerLink="/mis-envios" routerLinkActive="active-link" class="nav-link">Mis Envíos</a>
-        </li>
-
-        <li class="nav-item">
-          <a routerLink="/contactanos" routerLinkActive="active-link" class="nav-link">Contáctanos</a>
-        </li>
-      </ul>
-
-     
-      <div class="d-flex align-items-center gap-3">
-        <ng-container *ngIf="isAuthenticated; else loginBtn">
-          <div class="user-chip d-flex align-items-center px-3 py-1 rounded-pill">
-            <i class="bi bi-person-circle me-2"></i>
-            <span>{{ userName }}</span>
-            <small class="ms-2 text-muted">({{ userRole }})</small>
-          </div>
-          <button class="btn btn-logout rounded-pill px-3" (click)="logout()">
-            <i class="bi bi-box-arrow-right"></i> Salir
-          </button>
-        </ng-container>
-
-        <ng-template #loginBtn>
-          <a routerLink="/auth" class="btn btn-accent rounded-pill px-4">
-            <i class="bi bi-door-open"></i> Zona Clientes
+          <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}" class="nav-link">
+            Inicio
           </a>
-        </ng-template>
-      </div>
-    </div>
-  </div>
-</nav> -->
-
-
-
-<nav class="navbar navbar-expand-lg fixed-top shadow-sm">
-  <div class="container-fluid px-4">
-    <!-- Marca -->
-    <a class="navbar-brand fw-bold text-accent" routerLink="/">
-      <i class="bi bi-truck"></i> ENVIOS TODO PAÍS
-    </a>
-
-    <!-- Botón responsive -->
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <!-- Navegación -->
-    <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-      <ul class="navbar-nav mx-auto">
+        </li>
         <li class="nav-item">
-          <a routerLink="/" routerLinkActive="active-link" class="nav-link">Inicio</a>
+          <a routerLink="/cotizador" routerLinkActive="active-link" class="nav-link">Cotizador</a>
         </li>
         <li class="nav-item">
           <a routerLink="/ubicanos" routerLinkActive="active-link" class="nav-link">Ubícanos</a>
         </li>
-
         <li class="nav-item">
-          <a routerLink="/cotizador" routerLinkActive="active-link" class="nav-link">Cotizador</a>
-        </li>        
-
-        <!-- Solo roles con permiso -->
-        <li class="nav-item" *ngIf="isAuthenticated && (userRole === 'Administrador' || userRole === 'Operador')">
-          <a routerLink="/crear-envio" routerLinkActive="active-link" class="nav-link">Registrar Envio</a>
+          <a routerLink="/noticias" routerLinkActive="active-link" class="nav-link">Noticias</a>
         </li>
 
-        
-        <!-- Solo roles con permiso -->
+        <!-- Operador / Admin -->
         <li class="nav-item" *ngIf="isAuthenticated && (userRole === 'Administrador' || userRole === 'Operador')">
-          <a routerLink="/lista-envios" routerLinkActive="active-link" class="nav-link">Listar Envíos</a>
+          <a routerLink="/crear-envio" routerLinkActive="active-link" class="nav-link">
+            <i class="bi bi-plus-circle me-1" style="font-size:0.8rem"></i>Registrar Envío
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isAuthenticated && (userRole === 'Administrador' || userRole === 'Operador')">
+          <a routerLink="/lista-envios" routerLinkActive="active-link" class="nav-link">
+            <i class="bi bi-list-ul me-1" style="font-size:0.8rem"></i>Lista de Envíos
+          </a>
         </li>
 
+        <!-- Cliente -->
         <li class="nav-item" *ngIf="isAuthenticated && userRole === 'Cliente'">
           <a routerLink="/mis-envios" routerLinkActive="active-link" class="nav-link">Mis Envíos</a>
         </li>
@@ -120,24 +55,26 @@
       </ul>
 
       <!-- Zona derecha -->
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
         <ng-container *ngIf="isAuthenticated; else loginBtn">
-          <div class="user-menu position-relative">
-            <button class="btn user-chip" (click)="toggleUserMenu()">
-              <i class="bi bi-person-circle me-2"></i>
+          <div class="user-menu">
+            <button class="user-chip" (click)="toggleUserMenu()">
+              <i class="bi bi-person-circle"></i>
               <span>{{ userName }}</span>
-              <small class="ms-2 text-muted">({{ userRole }})</small>
-              <i class="bi bi-chevron-down ms-2"></i>
+              <span class="role-badge">{{ userRole }}</span>
+              <i class="bi bi-chevron-down" style="font-size:0.7rem; opacity:0.6"></i>
             </button>
             <div class="user-dropdown" *ngIf="showUserMenu">
-              <button class="dropdown-item" (click)="logout()">Cerrar Sesión</button>
+              <button class="dropdown-item" (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+              </button>
             </div>
           </div>
         </ng-container>
 
         <ng-template #loginBtn>
-          <a routerLink="/auth" class="btn btn-accent rounded-pill px-4">
-            <i class="bi bi-door-open"></i> Zona Clientes
+          <a routerLink="/auth" class="btn btn-zona">
+            <i class="bi bi-door-open me-1"></i> Zona Clientes
           </a>
         </ng-template>
       </div>

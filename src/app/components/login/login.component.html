@@ -1,136 +1,103 @@
-<!-- <div class="login-container d-flex align-items-center justify-content-center min-vh-100 bg-light">
-  <div class="card shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%;">
-    <div class="card-header bg-primary text-white text-center rounded-top-4">
-      <h4 class="fw-bold mb-0"><i class="bi bi-box-seam"></i> ENVIOS TODOPAIS</h4>
-      <small>ZONA DE CLIENTES</small>
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <!-- Header -->
+    <div class="card-header-custom">
+      <div class="brand-icon"><i class="bi bi-truck-front-fill"></i></div>
+      <div class="brand-name">ENVIOS TODOPAIS</div>
+      <div class="brand-sub">Portal de clientes</div>
     </div>
 
-    <div class="card-body p-4">
-      <form [formGroup]="form" (ngSubmit)="login()" novalidate>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Correo electrónico</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-envelope-fill text-primary"></i></span>
-            <input formControlName="correo" class="form-control" type="email" placeholder="cliente@correo.com" />
-          </div>
-          <small class="text-danger" *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid">
-            Ingrese un correo válido.
-          </small>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Contraseña</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-lock-fill text-primary"></i></span>
-            <input formControlName="password" class="form-control" type="password" placeholder="••••••" />
-          </div>
-          <small class="text-danger" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
-            Mínimo 6 caracteres.
-          </small>
-        </div>
-
-        <div class="d-grid mb-3">
-          <button class="btn btn-primary btn-lg shadow-sm" [disabled]="form.invalid">
-            <i class="bi bi-box-arrow-in-right"></i> Ingresar
-          </button>
-        </div>
-
-        <div class="text-center">
-          <a class="text-decoration-none small text-muted" routerLink="/auth/reset-password">
-            ¿Olvidaste tu contraseña?
-          </a>
-        </div>
-      </form>
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab" [class.active]="!resetMode" (click)="toggleResetMode(false)">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Ingresar
+      </button>
+      <button class="auth-tab" [class.active]="resetMode" (click)="toggleResetMode(true)">
+        <i class="bi bi-key me-1"></i> Restablecer
+      </button>
     </div>
 
-    <div class="card-footer bg-light text-center text-muted small rounded-bottom-4">
-      © 2025 ENVIOS TODOPAIS · Todos los derechos reservados
-    </div>
-  </div>
-</div> -->
-
-
-
-
-<div class="login-container d-flex align-items-center justify-content-center min-vh-100">
-  <div class="card shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%;">
-    <div class="card-body p-4">
-      <div class="text-center mb-4">
-        <h4 class="fw-bold text-accent"><i class="bi bi-box-seam"></i> ENVIOS TODOPAIS</h4>
-        <small class="text-light">ZONA DE CLIENTES</small>
-      </div>
+    <!-- Body -->
+    <div class="card-body-custom">
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-        <div class="mb-3" *ngIf="!resetMode">
-          <label class="form-label fw-semibold text-light">Correo electrónico</label>
-          <div class="input-group">
-            <span class="input-group-text bg-dark"><i class="bi bi-envelope-fill text-accent"></i></span>
-            <input formControlName="correo" class="form-control" type="email" placeholder="cliente@correo.com" />
-          </div>
-          <small class="text-warning" *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid">
-            Ingrese un correo válido.
-          </small>
-        </div>
 
-        <div class="mb-3" *ngIf="!resetMode">
-          <label class="form-label fw-semibold text-light">Contraseña</label>
-          <div class="input-group">
-            <span class="input-group-text bg-dark"><i class="bi bi-lock-fill text-accent"></i></span>
-            <input formControlName="password" class="form-control" type="password" placeholder="••••••" />
+        <!-- ══ LOGIN ══ -->
+        <ng-container *ngIf="!resetMode">
+          <div class="field-group">
+            <label class="field-label">Correo electrónico</label>
+            <div class="input-wrap">
+              <i class="bi bi-envelope field-icon"></i>
+              <input formControlName="correo" type="email" placeholder="tu@correo.com" autocomplete="email" />
+            </div>
+            <div class="field-error" *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Correo inválido
+            </div>
           </div>
-          <small class="text-warning" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
-            Mínimo 6 caracteres.
-          </small>
-        </div>
 
-        <div class="mb-3" *ngIf="resetMode">
-          <label class="form-label fw-semibold text-light">Correo electrónico</label>
-          <div class="input-group">
-            <span class="input-group-text bg-dark"><i class="bi bi-envelope-fill text-accent"></i></span>
-            <input formControlName="correo" class="form-control" type="email" placeholder="cliente@correo.com" />
+          <div class="field-group">
+            <label class="field-label">Contraseña</label>
+            <div class="input-wrap">
+              <i class="bi bi-lock field-icon"></i>
+              <input formControlName="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+            <div class="field-error" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Mínimo 6 caracteres
+            </div>
           </div>
-          <small class="text-warning" *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid">
-            Ingrese un correo válido.
-          </small>
-        </div>
 
-        <div class="mb-3" *ngIf="resetMode">
-          <label class="form-label fw-semibold text-light">DNI</label>
-          <div class="input-group">
-            <span class="input-group-text bg-dark"><i class="bi bi-person-fill text-accent"></i></span>
-            <input formControlName="dni" class="form-control" type="text" placeholder="12345678" />
+          <div class="d-flex justify-content-end mb-3">
+            <span class="link-muted" (click)="toggleResetMode(true)">¿Olvidaste tu contraseña?</span>
           </div>
-          <small class="text-warning" *ngIf="form.get('dni')?.touched && form.get('dni')?.invalid">
-            Ingrese un DNI válido (8 dígitos).
-          </small>
-        </div>
 
-        <div class="mb-3" *ngIf="resetMode">
-          <label class="form-label fw-semibold text-light">Nueva Contraseña</label>
-          <div class="input-group">
-            <span class="input-group-text bg-dark"><i class="bi bi-lock-fill text-accent"></i></span>
-            <input formControlName="nuevaPassword" class="form-control" type="password" placeholder="••••••" />
-          </div>
-          <small class="text-warning" *ngIf="form.get('nuevaPassword')?.touched && form.get('nuevaPassword')?.invalid">
-            Mínimo 6 caracteres.
-          </small>
-        </div>
-
-        <div class="d-grid mb-3">
-          <button class="btn btn-accent btn-lg shadow-sm" [disabled]="form.invalid">
-            <span *ngIf="!resetMode"><i class="bi bi-box-arrow-in-right"></i> Ingresar</span>
-            <span *ngIf="resetMode"><i class="bi bi-key-fill"></i> Restablecer</span>
+          <button type="submit" class="btn-submit" [disabled]="isLoading">
+            <span *ngIf="!isLoading"><i class="bi bi-box-arrow-in-right"></i> Ingresar</span>
+            <span *ngIf="isLoading"><span class="spinner-border spinner-border-sm"></span> Verificando...</span>
           </button>
-        </div>
+        </ng-container>
 
-        <div class="text-center">
-          <a class="text-decoration-none small text-accent cursor-pointer" (click)="toggleResetMode()" *ngIf="!resetMode">
-            ¿Olvidaste tu contraseña?
-          </a>
-          <a class="text-decoration-none small text-accent cursor-pointer" (click)="toggleResetMode()" *ngIf="resetMode">
-            Volver al inicio de sesión
-          </a>
-        </div>
+        <!-- ══ RESET PASSWORD ══ -->
+        <ng-container *ngIf="resetMode">
+          <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.25rem; text-align:center;">
+            Ingresa tu correo y DNI para restablecer tu contraseña.
+          </p>
+
+          <div class="field-group">
+            <label class="field-label">Correo electrónico</label>
+            <div class="input-wrap">
+              <i class="bi bi-envelope field-icon"></i>
+              <input formControlName="correo" type="email" placeholder="tu@correo.com" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">DNI</label>
+            <div class="input-wrap">
+              <i class="bi bi-credit-card field-icon"></i>
+              <input formControlName="dni" type="text" placeholder="12345678" maxlength="8" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Nueva contraseña</label>
+            <div class="input-wrap">
+              <i class="bi bi-lock field-icon"></i>
+              <input formControlName="nuevaPassword" type="password" placeholder="Mínimo 6 caracteres" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="isLoading">
+            <span *ngIf="!isLoading"><i class="bi bi-check-lg"></i> Restablecer contraseña</span>
+            <span *ngIf="isLoading"><span class="spinner-border spinner-border-sm"></span> Procesando...</span>
+          </button>
+        </ng-container>
+
       </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer-custom">
+      © 2025 Envios Todopais · Todos los derechos reservados
     </div>
   </div>
 </div>

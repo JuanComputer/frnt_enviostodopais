@@ -1,107 +1,207 @@
-// .login-container {
-//     background: linear-gradient(135deg, #007bff22, #00bcd422);
-//   }
-  
-//   .card {
-//     border-radius: 1.5rem !important;
-//     overflow: hidden;
-//   }
-  
-//   .card-header {
-//     background: linear-gradient(90deg, #007bff, #00bcd4);
-//   }
-  
-//   .input-group-text {
-//     background-color: #f8f9fa;
-//   }
-  
-//   .btn-primary {
-//     background: linear-gradient(90deg, #007bff, #00bcd4);
-//     border: none;
-//     transition: transform 0.15s ease, box-shadow 0.15s ease;
-//   }
-  
-//   .btn-primary:hover {
-//     transform: scale(1.03);
-//     box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
-//   }
-  
-
-
-
-.login-container {
-  background: linear-gradient(135deg, #1a252f, #2c3e50);
+.login-wrapper {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(15,23,42,0.96) 0%, rgba(26,86,219,0.12) 100%),
+    url('../../../assets/img/boxes.jpg') center/cover no-repeat fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 16px 40px;
 }
 
-.card {
-  border-radius: 1.5rem !important;
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(22, 33, 55, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
-  transition: transform 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeInUp 0.6s ease-out both;
+}
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+/* Header de la card */
+.card-header-custom {
+  background: linear-gradient(135deg, #1a56db, #1341b8);
+  padding: 28px 32px 24px;
+  text-align: center;
+
+  .brand-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 1.5rem;
+    color: #fff;
+  }
+
+  .brand-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+
+  .brand-sub {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 }
 
-.card-body {
-  padding: 2.5rem;
-}
+/* Tabs login / register / reset */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 
-.input-group-text {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-right: none;
-  color: #ffffff;
-}
+  .auth-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 14px 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
 
-.form-control {
-  border-left: none;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  border-radius: 0 8px 8px 0;
-  &:focus {
-    border-color: #ff6200;
-    background-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 8px rgba(255, 98, 0, 0.5);
+    &:hover { color: #94a3b8; }
+
+    &.active {
+      color: #f59e0b;
+      border-bottom-color: #f59e0b;
+    }
   }
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Body */
+.card-body-custom {
+  padding: 28px 32px 32px;
+}
+
+/* Inputs */
+.field-group {
+  margin-bottom: 18px;
+}
+
+.field-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 7px;
+  display: block;
+}
+
+.input-wrap {
+  position: relative;
+
+  .field-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #475569;
+    font-size: 0.95rem;
+    pointer-events: none;
+    transition: color 0.2s;
+  }
+
+  input {
+    background: rgba(15,23,42,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 11px 13px 11px 38px;
+    width: 100%;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #1a56db;
+      box-shadow: 0 0 0 3px rgba(26,86,219,0.2);
+      background: rgba(15,23,42,0.85);
+
+      & ~ .field-icon { color: #1a56db; }
+    }
+
+    &::placeholder { color: #334155; }
   }
 }
 
-.btn-accent {
-  background: #ff6200;
+/* Botón submit */
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.97rem;
   border: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  color: #ffffff;
-  font-weight: 500;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+  transition: all 0.25s;
+  box-shadow: 0 3px 14px rgba(245,158,11,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(255, 98, 0, 0.5);
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(245,158,11,0.45);
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
   }
 
   &:disabled {
-    background: #4a4a4a;
-    opacity: 0.8;
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
-.text-warning {
-  color: #ffca28;
-  font-size: 0.85rem;
-}
-
-.text-accent {
-  color: #ff6200;
-}
-
-.cursor-pointer {
+/* Link reset password */
+.link-muted {
+  color: #475569;
+  font-size: 0.83rem;
+  text-decoration: none;
+  transition: color 0.2s;
   cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-  }
+
+  &:hover { color: #f59e0b; text-decoration: underline; }
+}
+
+/* Error messages */
+.field-error {
+  color: #fca5a5;
+  font-size: 0.78rem;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Footer card */
+.card-footer-custom {
+  text-align: center;
+  padding: 14px 24px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  color: #334155;
+  font-size: 0.78rem;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
