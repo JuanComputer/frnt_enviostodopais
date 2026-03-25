@@ -24,7 +24,7 @@ FROM nginx:alpine
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copiar el build generado (Angular SSR genera en dist/browser para el cliente)
-COPY --from=build /app/dist/enviostodopais/browser /usr/share/nginx/html
+COPY --from=build /app/dist/enviostodopais/browser/browser /usr/share/nginx/html
 
 # Copiar configuración nginx personalizada (maneja SPA routing + compresión)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
