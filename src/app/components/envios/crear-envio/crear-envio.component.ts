@@ -9,13 +9,23 @@ import { CotizadorService } from '../../../services/cotizador.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ModalMensajeComponent } from '../../modal-mensaje/modal-mensaje.component';
 
-// Validator: solo dígitos y longitud exacta
+// Validator: solo dígitos y longitud exacta (vacío lo maneja Validators.required aparte)
 function soloDigitosLongitud(longitud: number): ValidatorFn {
   return (control: AbstractControl) => {
-    if (!control.value) return { requerido: true };
-    const val = String(control.value).trim();
+    const val = String(control.value || '').trim();
+    if (!val) return null; // vacío lo maneja required
     const ok = /^\d+$/.test(val) && val.length === longitud;
     return ok ? null : { longitudInvalida: { esperado: longitud, actual: val.length } };
+  };
+}
+
+// Validator: email opcional — solo valida formato si el campo tiene valor
+function emailOpcional(): ValidatorFn {
+  return (control: AbstractControl) => {
+    const val = String(control.value || '').trim();
+    if (!val) return null;
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+    return ok ? null : { emailInvalido: true };
   };
 }
 
@@ -61,7 +71,7 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
     emisorDni:      ['', [Validators.required, soloDigitosLongitud(8)]],
     emisorNombre:   ['', Validators.required],
     emisorTelefono: [''],
-    emisorCorreo:   ['', Validators.email],
+    emisorCorreo:   ['', emailOpcional()],
 
     // Receptor
     receptorTipoDoc: ['DNI'],
