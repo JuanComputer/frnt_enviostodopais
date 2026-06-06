@@ -68,6 +68,9 @@
               <i class="bi bi-envelope field-icon"></i>
               <input formControlName="correo" type="email" placeholder="tu@correo.com" />
             </div>
+            <div class="field-error" *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Correo inválido
+            </div>
           </div>
 
           <div class="field-group">
@@ -76,6 +79,9 @@
               <i class="bi bi-credit-card field-icon"></i>
               <input formControlName="dni" type="text" placeholder="12345678" maxlength="8" />
             </div>
+            <div class="field-error" *ngIf="form.get('dni')?.touched && form.get('dni')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> DNI de 8 dígitos numéricos
+            </div>
           </div>
 
           <div class="field-group">
@@ -83,6 +89,9 @@
             <div class="input-wrap">
               <i class="bi bi-lock field-icon"></i>
               <input formControlName="nuevaPassword" type="password" placeholder="Mínimo 6 caracteres" />
+            </div>
+            <div class="field-error" *ngIf="form.get('nuevaPassword')?.touched && form.get('nuevaPassword')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Mínimo 6 caracteres
             </div>
           </div>
 

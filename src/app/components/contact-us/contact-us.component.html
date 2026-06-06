@@ -17,7 +17,7 @@
             <div class="info-icon"><i class="bi bi-envelope"></i></div>
             <div>
               <div class="info-label">Correo</div>
-              <div class="info-value">contacto_enviostodopais.pe</div>
+              <div class="info-value">contacto@enviostodopais.pe</div>
             </div>
           </div>
           <div class="info-item">
@@ -48,33 +48,47 @@
       <div class="col-lg-6">
         <div class="form-card">
           <div class="row g-3">
+
             <div class="col-md-6">
-              <label class="form-label">Nombre completo</label>
+              <label class="form-label">Nombre completo <span class="text-danger">*</span></label>
               <input type="text" class="form-control" placeholder="Ej: Juan Pérez"
-                     [(ngModel)]="name" name="name" />
+                     [(ngModel)]="name" name="name"
+                     [class.is-invalid]="errors.name" />
+              <div class="invalid-feedback" *ngIf="errors.name">{{ errors.name }}</div>
             </div>
+
             <div class="col-md-6">
-              <label class="form-label">Correo electrónico</label>
+              <label class="form-label">Correo electrónico <span class="text-danger">*</span></label>
               <input type="email" class="form-control" placeholder="tu@correo.com"
-                     [(ngModel)]="email" name="email" />
+                     [(ngModel)]="email" name="email"
+                     [class.is-invalid]="errors.email" />
+              <div class="invalid-feedback" *ngIf="errors.email">{{ errors.email }}</div>
             </div>
+
             <div class="col-12">
-              <label class="form-label">Asunto</label>
+              <label class="form-label">Asunto <span class="text-danger">*</span></label>
               <input type="text" class="form-control" placeholder="¿En qué podemos ayudarte?"
-                     [(ngModel)]="asunto" name="asunto" />
+                     [(ngModel)]="asunto" name="asunto"
+                     [class.is-invalid]="errors.asunto" />
+              <div class="invalid-feedback" *ngIf="errors.asunto">{{ errors.asunto }}</div>
             </div>
+
             <div class="col-12">
-              <label class="form-label">Mensaje</label>
+              <label class="form-label">Mensaje <span class="text-danger">*</span></label>
               <textarea class="form-control" rows="4"
                         placeholder="Describe tu consulta o problema con el mayor detalle posible..."
-                        [(ngModel)]="message" name="message"></textarea>
+                        [(ngModel)]="message" name="message"
+                        [class.is-invalid]="errors.message"></textarea>
+              <div class="invalid-feedback" *ngIf="errors.message">{{ errors.message }}</div>
             </div>
+
             <div class="col-12">
               <button class="btn-enviar" (click)="submitContact()" [disabled]="enviado">
                 <span *ngIf="!enviado"><i class="bi bi-send"></i> Enviar mensaje</span>
                 <span *ngIf="enviado"><i class="bi bi-check-lg"></i> Mensaje enviado</span>
               </button>
             </div>
+
           </div>
         </div>
       </div>

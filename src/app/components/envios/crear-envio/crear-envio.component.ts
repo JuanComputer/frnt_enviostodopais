@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { TiendasService } from '../../../services/tiendas/tiendas.service';
@@ -8,6 +8,16 @@ import { EnviosService } from '../../../services/envios/envios.service';
 import { CotizadorService } from '../../../services/cotizador.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { ModalMensajeComponent } from '../../modal-mensaje/modal-mensaje.component';
+
+// Validator: solo dígitos y longitud exacta
+function soloDigitosLongitud(longitud: number): ValidatorFn {
+  return (control: AbstractControl) => {
+    if (!control.value) return { requerido: true };
+    const val = String(control.value).trim();
+    const ok = /^\d+$/.test(val) && val.length === longitud;
+    return ok ? null : { longitudInvalida: { esperado: longitud, actual: val.length } };
+  };
+}
 
 @Component({
   selector: 'app-crear-envio',
@@ -17,13 +27,13 @@ import { ModalMensajeComponent } from '../../modal-mensaje/modal-mensaje.compone
   styleUrls: ['./crear-envio.component.scss']
 })
 export class CrearEnvioComponent implements OnInit, OnDestroy {
-  private fb        = inject(FormBuilder);
-  private tiendasSvc = inject(TiendasService);
-  private enviosSvc  = inject(EnviosService);
+  private fb           = inject(FormBuilder);
+  private tiendasSvc   = inject(TiendasService);
+  private enviosSvc    = inject(EnviosService);
   private cotizadorSvc = inject(CotizadorService);
-  private authSvc    = inject(AuthService);
-  private router     = inject(Router);
-  private destroy$   = new Subject<void>();
+  private authSvc      = inject(AuthService);
+  private router       = inject(Router);
+  private destroy$     = new Subject<void>();
 
   tiendas: any[]    = [];
   isLoading         = false;
@@ -33,7 +43,7 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
   errorPrecio: string | null     = null;
 
   // Estado post-registro
-  envioCreado: any  = null;
+  envioCreado: any    = null;
   boletaBase64: string | null = null;
   boletaFilename = '';
 
@@ -48,30 +58,30 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
   form = this.fb.group({
     // Emisor
     emisorTipoDoc:  ['DNI'],
-    emisorDni:      ['', [Validators.required, Validators.minLength(8), Validators.maxLength(11)]],
+    emisorDni:      ['', [Validators.required, soloDigitosLongitud(8)]],
     emisorNombre:   ['', Validators.required],
     emisorTelefono: [''],
     emisorCorreo:   ['', Validators.email],
 
     // Receptor
     receptorTipoDoc: ['DNI'],
-    receptorDni:     ['', [Validators.required, Validators.minLength(8), Validators.maxLength(11)]],
+    receptorDni:     ['', [Validators.required, soloDigitosLongitud(8)]],
     receptorNombre:  ['', Validators.required],
 
     // Entrega
-    tipoEntrega:     ['SEDE', Validators.required],
-    destinoId:       [null as string | null],
-    direccionEntrega:[''],
+    tipoEntrega:      ['SEDE', Validators.required],
+    destinoId:        [null as string | null, Validators.required],
+    direccionEntrega: [''],
 
     // Paquete
-    peso:            [null as number | null, [Validators.required, Validators.min(0.01)]],
-    valorDeclarado:  [null as number | null, [Validators.required, Validators.min(1)]],
-    tipoServicio:    ['Estandar', Validators.required],
+    peso:               [null as number | null, [Validators.required, Validators.min(0.01)]],
+    valorDeclarado:     [null as number | null, [Validators.required, Validators.min(1)]],
+    tipoServicio:       ['Estandar', Validators.required],
     descripcionPaquete: ['', Validators.required],
 
     // Documento
-    tipoDocumento:   ['BOLETA', Validators.required],
-    fechaEstimada:   [''],
+    tipoDocumento: ['BOLETA', Validators.required],
+    fechaEstimada: [''],
   });
 
   ngOnInit(): void {
@@ -80,20 +90,61 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
       error: () => this.showModal(false, 'Error', 'No se pudieron cargar las sedes')
     });
 
-    // Dirección obligatoria si es DOMICILIO
+    // ── Cambio de tipo doc EMISOR → actualizar validator del DNI/RUC ──
+    this.form.get('emisorTipoDoc')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tipo => {
+        const ctrl = this.form.get('emisorDni');
+        const longitud = tipo === 'RUC' ? 11 : 8;
+        ctrl?.setValidators([Validators.required, soloDigitosLongitud(longitud)]);
+        ctrl?.setValue('');
+        ctrl?.updateValueAndValidity();
+      });
+
+    // ── Cambio de tipo doc RECEPTOR → actualizar validator del DNI/RUC ──
+    this.form.get('receptorTipoDoc')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tipo => {
+        const ctrl = this.form.get('receptorDni');
+        const longitud = tipo === 'RUC' ? 11 : 8;
+        ctrl?.setValidators([Validators.required, soloDigitosLongitud(longitud)]);
+        ctrl?.setValue('');
+        ctrl?.updateValueAndValidity();
+      });
+
+    // ── Cambio de tipo entrega → alternar validators de destinoId / direccionEntrega ──
     this.form.get('tipoEntrega')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(tipo => {
-        const dir = this.form.get('direccionEntrega');
-        if (tipo === 'DOMICILIO') dir?.setValidators([Validators.required]);
-        else dir?.clearValidators();
+        const destino = this.form.get('destinoId');
+        const dir     = this.form.get('direccionEntrega');
+
+        if (tipo === 'DOMICILIO') {
+          destino?.clearValidators();
+          destino?.setValue(null);
+          dir?.setValidators([Validators.required]);
+        } else {
+          destino?.setValidators([Validators.required]);
+          dir?.clearValidators();
+          dir?.setValue('');
+        }
+
+        destino?.updateValueAndValidity();
         dir?.updateValueAndValidity();
         this.recalcularPrecio();
       });
 
-    // Recalcular precio cuando cambian campos relevantes
-    const camposPrecio = ['destinoId', 'peso', 'valorDeclarado', 'tipoServicio'];
-    camposPrecio.forEach(campo => {
+    // ── Validación cruzada FACTURA → emisor debe ser RUC ──
+    this.form.get('tipoDocumento')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.validarFacturaRuc());
+
+    this.form.get('emisorTipoDoc')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.validarFacturaRuc());
+
+    // ── Recalcular precio cuando cambian campos relevantes ──
+    ['destinoId', 'peso', 'valorDeclarado', 'tipoServicio'].forEach(campo => {
       this.form.get(campo)?.valueChanges
         .pipe(debounceTime(600), takeUntil(this.destroy$))
         .subscribe(() => this.recalcularPrecio());
@@ -105,38 +156,51 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // Agrega error al campo emisorTipoDoc si se elige FACTURA con DNI
+  private validarFacturaRuc(): void {
+    const tipoDoc   = this.form.get('tipoDocumento')?.value;
+    const emisorDoc = this.form.get('emisorTipoDoc')?.value;
+    const ctrl      = this.form.get('emisorTipoDoc');
+
+    if (tipoDoc === 'FACTURA' && emisorDoc !== 'RUC') {
+      ctrl?.setErrors({ facturaRequiereRuc: true });
+    } else {
+      // Quitar solo ese error sin tocar los demás
+      const errors = { ...(ctrl?.errors || {}) };
+      delete errors['facturaRequiereRuc'];
+      ctrl?.setErrors(Object.keys(errors).length ? errors : null);
+    }
+  }
+
   recalcularPrecio(): void {
     const v = this.form.value;
-    // Necesitamos destino (o al menos para DOMICILIO no), peso y valor declarado
-    const peso = v.peso;
+    const peso           = v.peso;
     const valorDeclarado = v.valorDeclarado;
-    const tipoServicio = v.tipoServicio || 'Estandar';
-    const destinoId = v.destinoId;
-    const tipoEntrega = v.tipoEntrega;
+    const tipoServicio   = v.tipoServicio || 'Estandar';
+    const destinoId      = v.destinoId;
+    const tipoEntrega    = v.tipoEntrega;
 
-    if (!peso || !valorDeclarado || peso <= 0 || valorDeclarado < 0) {
+    if (!peso || !valorDeclarado || peso <= 0 || valorDeclarado < 1) {
       this.precioCalculado = null;
-      this.diasEstimados = null;
-      this.errorPrecio = null;
+      this.diasEstimados   = null;
+      this.errorPrecio     = null;
       return;
     }
     if (tipoEntrega === 'SEDE' && !destinoId) {
       this.precioCalculado = null;
-      this.errorPrecio = null;
+      this.errorPrecio     = null;
       return;
     }
 
     this.calculandoPrecio = true;
-    this.errorPrecio = null;
+    this.errorPrecio      = null;
 
-    // Para cotizar necesitamos un origenId — usamos el mismo destino como placeholder
-    // El backend usa solo el tipo de servicio + peso + valor para calcular
     const payload = {
-      origenId: destinoId || '00000000-0000-0000-0000-000000000000',
-      destinoId: destinoId || '00000000-0000-0000-0000-000000000000',
-      peso: peso,
-      tipoServicio: tipoServicio,
-      valorDeclarado: valorDeclarado
+      origenId:       destinoId || '00000000-0000-0000-0000-000000000000',
+      destinoId:      destinoId || '00000000-0000-0000-0000-000000000000',
+      peso,
+      tipoServicio,
+      valorDeclarado
     };
 
     this.cotizadorSvc.calcular(payload)
@@ -173,23 +237,23 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
     const v = this.form.value;
 
     const payload: any = {
-      emisorNombre:       v.emisorTipoDoc === 'RUC' ? null : v.emisorNombre,
-      emisorRazonSocial:  v.emisorTipoDoc === 'RUC' ? v.emisorNombre : null,
-      emisorDni:          v.emisorDni,
-      emisorTelefono:     v.emisorTelefono || null,
-      emisorCorreo:       v.emisorCorreo || null,
-      receptorNombre:     v.receptorTipoDoc === 'RUC' ? null : v.receptorNombre,
-      receptorRazonSocial:v.receptorTipoDoc === 'RUC' ? v.receptorNombre : null,
-      receptorDni:        v.receptorDni,
-      destinoId:          v.destinoId || null,
-      tipoEntrega:        v.tipoEntrega,
-      direccionEntrega:   v.direccionEntrega || null,
-      peso:               v.peso,
-      valorDeclarado:     v.valorDeclarado,
-      tipoServicio:       v.tipoServicio,
-      descripcionPaquete: v.descripcionPaquete,
-      tipoDocumento:      v.tipoDocumento,
-      fechaEstimada:      v.fechaEstimada || null,
+      emisorNombre:        v.emisorTipoDoc === 'RUC' ? null : v.emisorNombre,
+      emisorRazonSocial:   v.emisorTipoDoc === 'RUC' ? v.emisorNombre : null,
+      emisorDni:           v.emisorDni,
+      emisorTelefono:      v.emisorTelefono || null,
+      emisorCorreo:        v.emisorCorreo || null,
+      receptorNombre:      v.receptorTipoDoc === 'RUC' ? null : v.receptorNombre,
+      receptorRazonSocial: v.receptorTipoDoc === 'RUC' ? v.receptorNombre : null,
+      receptorDni:         v.receptorDni,
+      destinoId:           v.destinoId || null,
+      tipoEntrega:         v.tipoEntrega,
+      direccionEntrega:    v.direccionEntrega || null,
+      peso:                v.peso,
+      valorDeclarado:      v.valorDeclarado,
+      tipoServicio:        v.tipoServicio,
+      descripcionPaquete:  v.descripcionPaquete,
+      tipoDocumento:       v.tipoDocumento,
+      fechaEstimada:       v.fechaEstimada || null,
     };
 
     this.enviosSvc.crear(payload).subscribe({
@@ -199,12 +263,11 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
           this.envioCreado = res.data;
           this.showModal(true, 'Envío registrado', '¡El envío fue registrado exitosamente!',
             res.data?.codigoTracking, res.data?.estado);
-          // Obtener PDF
           if (res.data?.id) {
             this.enviosSvc.generarBoleta(res.data.id).subscribe({
               next: (br: any) => {
                 if (br?.statusCode === 200) {
-                  this.boletaBase64 = br.data.base64;
+                  this.boletaBase64  = br.data.base64;
                   this.boletaFilename = br.data.filename;
                 }
               }
@@ -222,20 +285,30 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
   }
 
   registrarOtro(): void {
-    this.envioCreado    = null;
-    this.boletaBase64   = null;
-    this.boletaFilename = '';
+    this.envioCreado     = null;
+    this.boletaBase64    = null;
+    this.boletaFilename  = '';
     this.precioCalculado = null;
     this.diasEstimados   = null;
     this.form.reset({
-      emisorTipoDoc: 'DNI', receptorTipoDoc: 'DNI',
-      tipoEntrega: 'SEDE', tipoServicio: 'Estandar', tipoDocumento: 'BOLETA'
+      emisorTipoDoc:   'DNI',
+      receptorTipoDoc: 'DNI',
+      tipoEntrega:     'SEDE',
+      tipoServicio:    'Estandar',
+      tipoDocumento:   'BOLETA'
     });
+    // Restaurar validators al resetear
+    this.form.get('emisorDni')?.setValidators([Validators.required, soloDigitosLongitud(8)]);
+    this.form.get('receptorDni')?.setValidators([Validators.required, soloDigitosLongitud(8)]);
+    this.form.get('destinoId')?.setValidators([Validators.required]);
+    this.form.get('direccionEntrega')?.clearValidators();
+    this.form.get('emisorDni')?.updateValueAndValidity();
+    this.form.get('receptorDni')?.updateValueAndValidity();
+    this.form.get('destinoId')?.updateValueAndValidity();
+    this.form.get('direccionEntrega')?.updateValueAndValidity();
   }
 
-  salir(): void {
-    this.router.navigate(['/lista-envios']);
-  }
+  salir(): void { this.router.navigate(['/lista-envios']); }
 
   abrirBoleta(): void {
     if (!this.boletaBase64) return;
@@ -259,16 +332,20 @@ export class CrearEnvioComponent implements OnInit, OnDestroy {
   }
 
   showModal(success: boolean, titulo: string, mensaje: string, codigo = '', estado = ''): void {
-    this.modalSuccess = success; this.modalTitulo = titulo;
-    this.modalMensaje = mensaje; this.modalCodigo = codigo;
+    this.modalSuccess = success; this.modalTitulo  = titulo;
+    this.modalMensaje = mensaje; this.modalCodigo  = codigo;
     this.modalEstado  = estado;  this.modalVisible = true;
   }
 
   cerrarModal(): void { this.modalVisible = false; }
 
-  // Helper para marcar campo como inválido y tocado
   isInvalid(campo: string): boolean {
     const c = this.form.get(campo);
     return !!(c?.invalid && c?.touched);
+  }
+
+  // Mensaje de error descriptivo para DNI/RUC
+  docErrorMsg(tipoDoc: string | null | undefined): string {
+    return tipoDoc === 'RUC' ? 'RUC de 11 dígitos numéricos' : 'DNI de 8 dígitos numéricos';
   }
 }

@@ -88,7 +88,11 @@ export class AdminUsuariosComponent implements OnInit {
   }
 
   guardar(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.errorForm = 'Revisa los campos marcados en rojo antes de continuar.';
+      return;
+    }
     this.guardando = true; this.errorForm = '';
     const dto = this.form.value;
     const obs = this.editando

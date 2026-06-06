@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private fb     = inject(FormBuilder);
   private auth   = inject(AuthService);
   private router = inject(Router);
@@ -21,18 +21,55 @@ export class LoginComponent {
   resetMode = false;
   isLoading = false;
 
+  // Un único FormGroup que nunca se destruye
   form = this.fb.group({
-    correo:       ['', [Validators.required, Validators.email]],
-    password:     ['', [Validators.required, Validators.minLength(6)]],
-    dni:          [''],
-    nuevaPassword:['']
+    correo:        ['', [Validators.required, Validators.email]],
+    password:      ['', [Validators.required, Validators.minLength(6)]],
+    dni:           [''],
+    nuevaPassword: ['']
   });
 
-  ngOnInit() {
-    this.toggleResetMode(false);
+  ngOnInit(): void {
+    this.applyLoginValidators();
   }
 
-  onSubmit() {
+  // ── Aplica validators para modo Login ──────────────────────────────
+  private applyLoginValidators(): void {
+    this.form.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.form.get('password')?.updateValueAndValidity();
+
+    this.form.get('dni')?.clearValidators();
+    this.form.get('dni')?.updateValueAndValidity();
+
+    this.form.get('nuevaPassword')?.clearValidators();
+    this.form.get('nuevaPassword')?.updateValueAndValidity();
+  }
+
+  // ── Aplica validators para modo Reset ──────────────────────────────
+  private applyResetValidators(): void {
+    this.form.get('password')?.clearValidators();
+    this.form.get('password')?.updateValueAndValidity();
+
+    this.form.get('dni')?.setValidators([Validators.required, Validators.pattern('^[0-9]{8}$')]);
+    this.form.get('dni')?.updateValueAndValidity();
+
+    this.form.get('nuevaPassword')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.form.get('nuevaPassword')?.updateValueAndValidity();
+  }
+
+  toggleResetMode(reset: boolean): void {
+    this.resetMode = reset;
+    this.isLoading = false;
+    this.form.reset();
+
+    if (reset) {
+      this.applyResetValidators();
+    } else {
+      this.applyLoginValidators();
+    }
+  }
+
+  onSubmit(): void {
     if (this.form.invalid) {
       this.toastr.warning('Completa todos los campos correctamente');
       this.form.markAllAsTouched();
@@ -74,26 +111,6 @@ export class LoginComponent {
           this.isLoading = false;
           this.toastr.error('Error de conexión con el servidor');
         }
-      });
-    }
-  }
-
-  toggleResetMode(reset = true) {
-    this.resetMode = reset;
-    this.isLoading = false;
-    if (reset) {
-      this.form = this.fb.group({
-        correo:       ['', [Validators.required, Validators.email]],
-        password:     [''],
-        dni:          ['', [Validators.required, Validators.pattern('^[0-9]{8}$')]],
-        nuevaPassword:['', [Validators.required, Validators.minLength(6)]]
-      });
-    } else {
-      this.form = this.fb.group({
-        correo:       ['', [Validators.required, Validators.email]],
-        password:     ['', [Validators.required, Validators.minLength(6)]],
-        dni:          [''],
-        nuevaPassword:['']
       });
     }
   }
