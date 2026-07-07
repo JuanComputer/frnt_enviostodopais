@@ -12,6 +12,10 @@
       </button>
     </div>
 
+    <div class="error-box mb-3" *ngIf="errorEliminar">
+      <i class="bi bi-exclamation-circle me-1"></i>{{ errorEliminar }}
+    </div>
+
     <!-- Filtros -->
     <div class="filters-bar">
       <div class="row g-2 align-items-end">
@@ -88,6 +92,9 @@
                         [title]="u.activo ? 'Desactivar' : 'Activar'">
                   <i class="bi" [class.bi-toggle-on]="u.activo" [class.bi-toggle-off]="!u.activo"></i>
                 </button>
+                <button class="btn-action danger" (click)="eliminar(u)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
               </td>
             </tr>
             <tr *ngIf="usuarios.length === 0">
@@ -121,6 +128,7 @@
             <button class="btn-action" [class.danger]="u.activo" (click)="toggleActivo(u)">
               <i class="bi" [class.bi-toggle-on]="u.activo" [class.bi-toggle-off]="!u.activo"></i>
             </button>
+            <button class="btn-action danger" (click)="eliminar(u)"><i class="bi bi-trash"></i></button>
           </div>
         </div>
       </div>

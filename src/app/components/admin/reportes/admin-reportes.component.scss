@@ -50,20 +50,24 @@
 }
 .bar-fill {
   height: 100%; border-radius: 4px; transition: width 1s ease-out;
-  &.entregado  { background: #10b981; }
-  &.transito   { background: #f59e0b; }
-  &.registrado { background: #6366f1; }
-  &.cancelado  { background: #64748b; }
-  &.no-entregado { background: #ef4444; }
+  &.entregado      { background: #10b981; }
+  &.transito       { background: #f59e0b; }
+  &.registrado     { background: #6366f1; }
+  &.recibido       { background: #0ea5e9; }
+  &.retrasado      { background: #eab308; }
+  &.con-problemas  { background: #ef4444; }
+  &.cancelado      { background: #64748b; }
 }
 .bar-value { font-size: 0.8rem; font-weight: 700; color: #e2e8f0; min-width: 28px; text-align: right; }
 .estado-dot {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  &.entregado   { background: #10b981; }
-  &.transito    { background: #f59e0b; }
-  &.registrado  { background: #6366f1; }
-  &.cancelado   { background: #64748b; }
-  &.no-entregado { background: #ef4444; }
+  &.entregado      { background: #10b981; }
+  &.transito       { background: #f59e0b; }
+  &.registrado     { background: #6366f1; }
+  &.recibido       { background: #0ea5e9; }
+  &.retrasado      { background: #eab308; }
+  &.con-problemas  { background: #ef4444; }
+  &.cancelado      { background: #64748b; }
 }
 
 .empty-state {

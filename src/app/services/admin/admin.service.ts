@@ -21,6 +21,7 @@ export class AdminService {
   crearUsuario(dto: any):              Observable<any> { return this.http.post<any>(`${this.baseU}/crear`, dto); }
   editarUsuario(id: string, dto: any): Observable<any> { return this.http.put<any>(`${this.baseU}/${id}/editar`, dto); }
   toggleActivo(id: string):            Observable<any> { return this.http.put<any>(`${this.baseU}/${id}/toggle-activo`, {}); }
+  eliminarUsuario(id: string):         Observable<any> { return this.http.delete<any>(`${this.baseU}/${id}`); }
   estadisticasUsuarios():              Observable<any> { return this.http.get<any>(`${this.baseU}/estadisticas`); }
 
   listarSedes():                       Observable<any> { return this.http.get<any>(`${this.baseT}/listar`); }

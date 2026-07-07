@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EnviosService } from '../../services/envios/envios.service';
+import { StorageService } from '../../services/storage.service';
 import { Envio } from '../../shared/models/envio.model';
 
 @Component({
@@ -34,19 +35,31 @@ export class ShipmentListComponent implements OnInit {
   // PDF
   cargandoPdf   = false;
 
+  // Debe coincidir exactamente con el CHECK constraint de tb_envios_estado en la BD
   readonly ESTADOS_COLOR: Record<string, string> = {
     'Registrado':         'registrado',
     'Recibido en sede':   'recibido',
     'En tránsito':        'transito',
-    'En sede de destino': 'sede-destino',
-    'Listo para recoger': 'listo',
-    'En reparto':         'reparto',
+    'Retrasado':          'retrasado',
+    'Con problemas':      'con-problemas',
     'Entregado':          'entregado',
-    'No entregado':       'no-entregado',
     'Cancelado':          'cancelado',
   };
 
-  constructor(private enviosService: EnviosService) {}
+  readonly ROLES_STAFF = ['Operador', 'Administrador de Sede', 'Administrador General'];
+
+  constructor(
+    private enviosService: EnviosService,
+    private storageSvc: StorageService,
+  ) {}
+
+  get userRole(): string {
+    return this.storageSvc.getUser()?.role || '';
+  }
+
+  get puedeCambiarEstado(): boolean {
+    return this.ROLES_STAFF.includes(this.userRole);
+  }
 
   ngOnInit(): void {
     this.cargarEnvios();
@@ -54,7 +67,13 @@ export class ShipmentListComponent implements OnInit {
 
   cargarEnvios(): void {
     this.isLoading = true;
-    this.enviosService.listar().subscribe({
+    // Un Cliente solo puede ver sus propios envíos (endpoint distinto);
+    // el staff (Operador/Admin) ve el listado general filtrado por sede.
+    const fuente = this.puedeCambiarEstado
+      ? this.enviosService.listar()
+      : this.enviosService.misEnvios();
+
+    fuente.subscribe({
       next: (res) => {
         this.isLoading  = false;
         this.shipments  = res.data || [];
@@ -95,7 +114,7 @@ export class ShipmentListComponent implements OnInit {
   }
 
   abrirCambioEstado(): void {
-    if (!this.selectedShipment?.id) return;
+    if (!this.selectedShipment?.id || !this.puedeCambiarEstado) return;
     this.mostrarCambioEstado = true;
     this.nuevoEstado = ''; this.notaEstado = ''; this.errorEstado = '';
     this.enviosService.obtenerEstadosValidos(this.selectedShipment.id).subscribe({
@@ -106,8 +125,8 @@ export class ShipmentListComponent implements OnInit {
 
   confirmarCambioEstado(): void {
     if (!this.selectedShipment?.id || !this.nuevoEstado) return;
-    if (this.nuevoEstado === 'No entregado' && !this.notaEstado.trim()) {
-      this.errorEstado = 'Debe indicar el motivo de no entrega'; return;
+    if (this.nuevoEstado === 'Con problemas' && !this.notaEstado.trim()) {
+      this.errorEstado = 'Debe indicar el detalle del problema'; return;
     }
     this.guardandoEstado = true; this.errorEstado = '';
     this.enviosService.cambiarEstado(this.selectedShipment.id, {
@@ -158,6 +177,6 @@ export class ShipmentListComponent implements OnInit {
   }
 
   get requiereNota(): boolean {
-    return this.nuevoEstado === 'No entregado';
+    return this.nuevoEstado === 'Con problemas';
   }
 }

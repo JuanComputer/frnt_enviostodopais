@@ -76,11 +76,9 @@
   &.registrado    { background: rgba(100,116,139,0.15); color: #94a3b8; }
   &.recibido      { background: rgba(139,92,246,0.15);  color: #c4b5fd; }
   &.transito      { background: rgba(245,158,11,0.15);  color: #fcd34d; }
-  &.sede-destino  { background: rgba(59,130,246,0.15);  color: #93c5fd; }
-  &.listo         { background: rgba(16,185,129,0.12);  color: #6ee7b7; }
-  &.reparto       { background: rgba(234,179,8,0.15);   color: #fde047; }
+  &.retrasado     { background: rgba(234,179,8,0.15);   color: #fde047; }
+  &.con-problemas { background: rgba(239,68,68,0.15);   color: #fca5a5; }
   &.entregado     { background: rgba(16,185,129,0.2);   color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
-  &.no-entregado  { background: rgba(239,68,68,0.15);   color: #fca5a5; }
   &.cancelado     { background: rgba(100,116,139,0.1);  color: #64748b; text-decoration: line-through; }
 }
 
@@ -193,9 +191,10 @@
   &:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
   &.selected { border-color: #1a56db; background: rgba(26,86,219,0.15); color: #93c5fd; }
   // Colores por estado
-  &.entregado.selected  { border-color: #10b981; background: rgba(16,185,129,0.15); color: #6ee7b7; }
-  &.no-entregado.selected { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #fca5a5; }
-  &.cancelado.selected  { border-color: #64748b; background: rgba(100,116,139,0.1); color: #94a3b8; }
+  &.entregado.selected     { border-color: #10b981; background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  &.con-problemas.selected { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #fca5a5; }
+  &.retrasado.selected     { border-color: #eab308; background: rgba(234,179,8,0.15); color: #fde047; }
+  &.cancelado.selected     { border-color: #64748b; background: rgba(100,116,139,0.1); color: #94a3b8; }
 }
 .ce-textarea {
   width: 100%; background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.1);

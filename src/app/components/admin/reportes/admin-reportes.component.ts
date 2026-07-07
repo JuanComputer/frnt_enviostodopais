@@ -46,9 +46,13 @@ export class AdminReportesComponent implements OnInit {
 
   estadoClass(estado: string): string {
     const map: Record<string, string> = {
-      'Entregado': 'entregado', 'En tránsito': 'transito',
-      'Cancelado': 'cancelado', 'No entregado': 'no-entregado',
-      'Registrado': 'registrado',
+      'Registrado':       'registrado',
+      'Recibido en sede': 'recibido',
+      'En tránsito':      'transito',
+      'Retrasado':        'retrasado',
+      'Con problemas':    'con-problemas',
+      'Entregado':        'entregado',
+      'Cancelado':        'cancelado',
     };
     return map[estado] || 'registrado';
   }

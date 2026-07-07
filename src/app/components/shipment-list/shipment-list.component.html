@@ -257,7 +257,7 @@
                 (click)="verBoleta(selectedShipment)">
           <i class="bi bi-file-earmark-pdf"></i> Ver PDF
         </button>
-        <button class="btn-modal-estado" (click)="abrirCambioEstado()">
+        <button class="btn-modal-estado" *ngIf="puedeCambiarEstado" (click)="abrirCambioEstado()">
           <i class="bi bi-arrow-repeat"></i> Cambiar estado
         </button>
         <button class="btn-modal-close" (click)="cerrarModal()">Cerrar</button>

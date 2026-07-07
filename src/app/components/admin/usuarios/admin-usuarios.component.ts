@@ -28,6 +28,7 @@ export class AdminUsuariosComponent implements OnInit {
   editando: any     = null;
   guardando         = false;
   errorForm         = '';
+  errorEliminar     = '';
 
   get userRole(): string { return this.storageSvc.getUser()?.role || ''; }
   get esAdminGeneral(): boolean { return this.userRole === 'Administrador General'; }
@@ -94,7 +95,9 @@ export class AdminUsuariosComponent implements OnInit {
       return;
     }
     this.guardando = true; this.errorForm = '';
-    const dto = this.form.value;
+    const dto: any = { ...this.form.value };
+    // Al editar, no enviar la contraseña si se dejó vacía (no se debe cambiar)
+    if (this.editando && !dto.password) delete dto.password;
     const obs = this.editando
       ? this.adminSvc.editarUsuario(this.editando.id, dto)
       : this.adminSvc.crearUsuario(dto);
@@ -114,6 +117,25 @@ export class AdminUsuariosComponent implements OnInit {
   toggleActivo(u: any): void {
     this.adminSvc.toggleActivo(u.id).subscribe({
       next: r => { if (r.statusCode === 200) this.cargarUsuarios(); }
+    });
+  }
+
+  eliminar(u: any): void {
+    this.errorEliminar = '';
+    const confirmado = confirm(
+      `¿Eliminar permanentemente a ${u.nombre} ${u.apellidoP}? Esta acción no se puede deshacer.`);
+    if (!confirmado) return;
+
+    this.adminSvc.eliminarUsuario(u.id).subscribe({
+      next: r => {
+        if (r.statusCode === 200) {
+          this.cargarUsuarios();
+        } else {
+          // p.ej. 409: tiene envíos asociados -> sugerir desactivar en vez de borrar
+          this.errorEliminar = r.message || 'No se pudo eliminar el usuario';
+        }
+      },
+      error: () => { this.errorEliminar = 'Error de conexión al eliminar usuario'; }
     });
   }
 
